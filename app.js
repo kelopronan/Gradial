@@ -1765,13 +1765,32 @@
     var fillEl = $('export-progress-fill');
     var iconBox = $('export-icon-container');
 
-    titleEl.textContent = 'Exporting MP4 Video (' + resolution.label + ')';
-    statusEl.textContent = 'Initializing WebCodecs...';
+    var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    var ext = isFirefox ? 'webm' : 'mp4';
+
+    titleEl.textContent = 'Exporting ' + ext.toUpperCase() + ' Video (' + resolution.label + ')';
+    statusEl.textContent = isFirefox ? 'Loading WebM Engine...' : 'Initializing WebCodecs...';
     percentEl.textContent = '0%';
     fillEl.style.width = '0%';
     iconBox.innerHTML = '<i data-lucide="video" class="animate-spin" style="width: 22px; height: 22px; color: var(--color-seaweed);"></i>';
     if (window.lucide) lucide.createIcons();
     show(overlay);
+
+    if (isFirefox && !window.WebMMuxer) {
+      try {
+        await new Promise((resolve, reject) => {
+          var script = document.createElement('script');
+          script.src = 'https://unpkg.com/webm-muxer/build/webm-muxer.js';
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      } catch (e) {
+        console.error('Failed to load WebMMuxer', e);
+        statusEl.textContent = 'Error: Failed to load WebM engine.';
+        return;
+      }
+    }
 
     var canvas = document.createElement('canvas');
     canvas.width = width;
@@ -1785,18 +1804,21 @@
 
     let muxer;
     try {
-      muxer = new Mp4Muxer.Muxer({
-        target: new Mp4Muxer.ArrayBufferTarget(),
-        video: {
-          codec: 'avc',
-          width: width,
-          height: height
-        },
-        fastStart: false
-      });
+      if (isFirefox) {
+        muxer = new WebMMuxer.Muxer({
+          target: new WebMMuxer.ArrayBufferTarget(),
+          video: { codec: 'V_VP8', width: width, height: height }
+        });
+      } else {
+        muxer = new Mp4Muxer.Muxer({
+          target: new Mp4Muxer.ArrayBufferTarget(),
+          video: { codec: 'avc', width: width, height: height },
+          fastStart: false
+        });
+      }
     } catch(e) {
-      console.error('Mp4Muxer not loaded!', e);
-      statusEl.textContent = 'Error: mp4-muxer not loaded.';
+      console.error('Muxer not loaded!', e);
+      statusEl.textContent = 'Error: muxer not loaded.';
       return;
     }
 
@@ -1809,46 +1831,56 @@
       }
     });
 
-    let codecString = 'avc1.640028'; // High Profile Level 4.0
-    if (width >= 3840 || height >= 2160) {
-      codecString = 'avc1.640034'; // Level 5.2
-    } else if (width >= 2560 || height >= 1440) {
-      codecString = 'avc1.640032'; // Level 5.1
-    } else if (width >= 1920 || height >= 1080) {
-      codecString = 'avc1.64002A'; // Level 4.2
-    }
-
-    let config = {
-      codec: codecString,
-      width: width,
-      height: height,
-      bitrate: 40000000,
-      bitrateMode: 'constant',
-      latencyMode: 'quality',
-      framerate: fps,
-    };
-
-    try {
-      let support = await VideoEncoder.isConfigSupported(config);
-      if (!support.supported) {
-        console.warn("High profile H.264 not supported by this browser, falling back to Baseline...");
-        config.codec = 'avc1.42E01F'; // Baseline profile fallback
-        support = await VideoEncoder.isConfigSupported(config);
-        
-        if (!support.supported) {
-          console.warn("Hardware config rejected, trying minimal configuration...");
-          delete config.bitrateMode;
-          delete config.latencyMode;
-        }
+    let config;
+    if (isFirefox) {
+      config = {
+        codec: 'vp8',
+        width: width,
+        height: height,
+        bitrate: 40000000,
+        framerate: fps
+      };
+      videoEncoder.configure(config);
+    } else {
+      let codecString = 'avc1.640028'; // High Profile Level 4.0
+      if (width >= 3840 || height >= 2160) {
+        codecString = 'avc1.640034'; // Level 5.2
+      } else if (width >= 2560 || height >= 1440) {
+        codecString = 'avc1.640032'; // Level 5.1
+      } else if (width >= 1920 || height >= 1080) {
+        codecString = 'avc1.64002A'; // Level 4.2
       }
-    } catch (e) {
-      console.warn("isConfigSupported failed, using safe fallback config:", e);
-      config.codec = 'avc1.42E01F';
-      delete config.bitrateMode;
-      delete config.latencyMode;
-    }
 
-    videoEncoder.configure(config);
+      config = {
+        codec: codecString,
+        width: width,
+        height: height,
+        bitrate: 40000000,
+        bitrateMode: 'constant',
+        latencyMode: 'quality',
+        framerate: fps,
+        avc: { format: 'avc' }
+      };
+
+      try {
+        let support = await VideoEncoder.isConfigSupported(config);
+        if (!support.supported) {
+          console.warn("High profile H.264 not supported by this browser, falling back to Baseline...");
+          config.codec = 'avc1.42E01F';
+          support = await VideoEncoder.isConfigSupported(config);
+          
+          if (!support.supported) {
+            delete config.bitrateMode;
+            delete config.latencyMode;
+          }
+        }
+      } catch (e) {
+        config.codec = 'avc1.42E01F';
+        delete config.bitrateMode;
+        delete config.latencyMode;
+      }
+      videoEncoder.configure(config);
+    }
 
     for (let currentFrame = 0; currentFrame < totalFrames; currentFrame++) {
       if (encoderError) {
@@ -1913,16 +1945,16 @@
       muxer.finalize();
     } catch (err) {
       console.error('Finalize error:', err);
-      statusEl.textContent = 'Export error during finalization.';
+      statusEl.textContent = 'Export error: ' + (err.message || err);
       return;
     }
     let buffer = muxer.target.buffer;
 
-    var blob = new Blob([buffer], { type: 'video/mp4' });
+    var blob = new Blob([buffer], { type: isFirefox ? 'video/webm' : 'video/mp4' });
     var url = URL.createObjectURL(blob);
     var link = document.createElement('a');
     var timestamp = new Date().getTime();
-    link.download = 'gradial_animation_' + width + 'x' + height + '_' + timestamp + '.mp4';
+    link.download = 'gradial_animation_' + width + 'x' + height + '_' + timestamp + '.' + ext;
     link.href = url;
     document.body.appendChild(link);
     link.click();
