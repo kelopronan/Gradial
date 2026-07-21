@@ -24,12 +24,6 @@ My friend **[Ahmad2012k](https://github.com/Ahmad2012k)** provided the creative 
 - **Web Audio API** for synthesized UI sound effects
 - **WebCodecs API** (`VideoEncoder`) & `mp4-muxer` for exporting high-quality MP4 video animations
 
-## Usage
-Simply launch a local web server in this directory:
-```bash
-python -m http.server 8000
-```
-Then navigate to `http://localhost:8000` in your web browser.
 
 ## License
 This project is proprietary and closed-source. All rights are reserved. See the `LICENSE` file for details.
