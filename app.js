@@ -1818,7 +1818,7 @@
       codecString = 'avc1.64002A'; // Level 4.2
     }
 
-    videoEncoder.configure({
+    let config = {
       codec: codecString,
       width: width,
       height: height,
@@ -1826,7 +1826,29 @@
       bitrateMode: 'constant',
       latencyMode: 'quality',
       framerate: fps,
-    });
+    };
+
+    try {
+      let support = await VideoEncoder.isConfigSupported(config);
+      if (!support.supported) {
+        console.warn("High profile H.264 not supported by this browser, falling back to Baseline...");
+        config.codec = 'avc1.42E01F'; // Baseline profile fallback
+        support = await VideoEncoder.isConfigSupported(config);
+        
+        if (!support.supported) {
+          console.warn("Hardware config rejected, trying minimal configuration...");
+          delete config.bitrateMode;
+          delete config.latencyMode;
+        }
+      }
+    } catch (e) {
+      console.warn("isConfigSupported failed, using safe fallback config:", e);
+      config.codec = 'avc1.42E01F';
+      delete config.bitrateMode;
+      delete config.latencyMode;
+    }
+
+    videoEncoder.configure(config);
 
     for (let currentFrame = 0; currentFrame < totalFrames; currentFrame++) {
       if (encoderError) {
@@ -1876,7 +1898,7 @@
         await new Promise(r => setTimeout(r, 15));
       }
 
-      let frame = new VideoFrame(canvas, { timestamp: Math.round((currentFrame * 1e6) / fps) });
+      let frame = new VideoFrame(canvas, { timestamp: Math.round((currentFrame * 1e6) / fps), alpha: 'discard' });
       videoEncoder.encode(frame, { keyFrame: currentFrame % 30 === 0 });
       frame.close();
 
