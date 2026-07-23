@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Gradial — Premium Skeuomorphic Image Color Eraser & Animated Gradient Generator">
   <title>Gradial — Color Eraser & Gradient Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="assets/lucide.min.js"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -16,7 +20,8 @@
 
   <!-- ==================== SNAPPY EXPORT PROGRESS MODAL ==================== -->
   <div id="export-modal-overlay" class="export-modal-backdrop hidden">
-    <div class="export-modal-card skeu-raised">
+    <div class="export-modal-card skeu-raised" style="position: relative;">
+
       <div class="export-modal-header">
         <div class="export-spinner-icon" id="export-icon-container">
           <i data-lucide="loader" class="spin-icon" style="color:var(--color-seaweed);"></i>
@@ -37,228 +42,507 @@
       <div class="export-progress-track skeu-inset">
         <div id="export-progress-fill" class="export-progress-fill-bar" style="width: 0%;"></div>
       </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
+        <button class="btn-sk btn-secondary-sk btn-xs-compact" id="export-modal-cancel-btn">
+          <i data-lucide="x" style="width:14px; height:14px;"></i> <span>Cancel Export</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- ==================== THEME SETTINGS MODAL ==================== -->
+  <!-- ==================== TERMS & CONDITIONS MODAL ==================== -->
+  <div id="terms-modal-overlay" class="export-modal-backdrop hidden" style="backdrop-filter: blur(12px); z-index: 9999;">
+    <div class="export-modal-card skeu-raised" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; max-width: 540px; width: 90%; box-shadow: 0 24px 48px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 16px; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <span style="font-size: 1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="shield-check" style="width: 20px; height: 20px; color: var(--accent-primary);"></i> Terms & Conditions — License
+        </span>
+        <button id="terms-modal-close-btn" class="settings-close-btn" title="Close (Esc)">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div style="max-height: 320px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; color: var(--text-sub); display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
+        <div style="background: var(--bg-recessed); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.78rem;">
+          Copyright (c) 2026 RSA Engineering. All rights reserved.<br>
+          Creative Assistance: Ahmad2012k
+        </div>
+        <p><strong>1. Proprietary Rights:</strong> This source code, application assets, and compiled software are proprietary and confidential. No part of this software may be copied, reproduced, modified, distributed, published, or transmitted in any form or by any means without prior written permission from the copyright owner.</p>
+        <p><strong>2. Authorized Usage:</strong> Gradial provides tools for creating, editing, and exporting linear, positional, and procedural animated gradients. Exported gradient media (PNG, MP4, WebM) created by users belong to the respective user for personal and commercial projects.</p>
+        <p><strong>3. Unauthorized Copying:</strong> Unauthorized copying or redistribution of this software, via any medium, is strictly prohibited.</p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <button class="btn-sk btn-primary-sk" id="terms-modal-accept-btn" style="padding: 8px 20px; font-size: 0.85rem;">
+          Close & Accept
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MY GRADIAL FULL-FLEDGED SETTINGS PAGE ==================== -->
   <div id="settings-modal-overlay" class="export-modal-backdrop hidden">
-    <div class="export-modal-card skeu-raised" style="width: 1000px; max-width: 95vw; max-height: 90vh; border-radius: var(--radius-xl); display: flex; flex-direction: column;">
-      <div class="export-modal-header" style="justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
-        <h3 class="export-modal-h3" style="margin:0; display:flex; align-items:center; gap:10px;"><i data-lucide="palette" style="color:var(--color-seaweed);"></i> My Gradial — Settings, Themes &amp; Adjustments</h3>
-        <button id="close-settings-btn" class="settings-icon-btn" style="width: 32px; height: 32px;"><i data-lucide="x"></i></button>
+    <div class="export-modal-card skeu-raised settings-modal-card settings-page-card">
+      
+      <!-- Top Header Bar -->
+      <div class="settings-page-header">
+        <div class="settings-header-left">
+          <div class="settings-header-icon-box">
+            <i data-lucide="settings" style="width:22px; height:22px;"></i>
+          </div>
+          <div>
+            <h3 class="settings-page-title">My Gradial — Settings & Preferences</h3>
+            <p class="settings-page-subtext">Customize themes, audio feedback, rendering quality, export defaults, and application preferences.</p>
+          </div>
+        </div>
+        <button id="close-settings-btn" class="settings-close-btn" title="Close Settings (Esc)">
+          <i data-lucide="x"></i>
+        </button>
       </div>
 
-      <div class="theme-grid" style="overflow-y: auto; padding-right: 8px;">
-        <!-- Default Theme -->
-        <div class="theme-card skeu-inset active" data-theme="">
-          <div class="theme-colors">
-            <div style="background:#0F1110;"></div>
-            <div style="background:#171B19;"></div>
-            <div style="background:#216869;"></div>
-            <div style="background:#49A078;"></div>
-          </div>
-          <span class="theme-name">Seaweed Default</span>
-        </div>
+      <!-- Main Settings Body -->
+      <div class="settings-page-body">
         
-        <!-- Golden Sand -->
-        <div class="theme-card skeu-inset" data-theme="theme-golden-sand">
-          <div class="theme-colors">
-            <div style="background:#FAF7EA;"></div>
-            <div style="background:#F3EED5;"></div>
-            <div style="background:#D5B942;"></div>
-            <div style="background:#C29A26;"></div>
-          </div>
-          <span class="theme-name">Golden Sand (Light Luxe)</span>
-        </div>
-
-        <!-- Fire & Ice -->
-        <div class="theme-card skeu-inset" data-theme="theme-fire-ice">
-          <div class="theme-colors">
-            <div style="background:#060B10;"></div>
-            <div style="background:#121E2C;"></div>
-            <div style="background:#01BAEF;"></div>
-            <div style="background:#B80C09;"></div>
-          </div>
-          <span class="theme-name">Fire & Ice</span>
-        </div>
-
-        <!-- Aqua Blossom -->
-        <div class="theme-card skeu-inset" data-theme="theme-aqua-blossom">
-          <div class="theme-colors">
-            <div style="background:#18191B;"></div>
-            <div style="background:#282B2F;"></div>
-            <div style="background:#53D8FB;"></div>
-            <div style="background:#D4AFB9;"></div>
-          </div>
-          <span class="theme-name">Aqua Blossom</span>
-        </div>
-
-        <!-- Oxidized Earth -->
-        <div class="theme-card skeu-inset" data-theme="theme-oxidized-earth">
-          <div class="theme-colors">
-            <div style="background:#080B05;"></div>
-            <div style="background:#182011;"></div>
-            <div style="background:#BBC5AA;"></div>
-            <div style="background:#A72608;"></div>
-          </div>
-          <span class="theme-name">Oxidized Earth</span>
-        </div>
-
-        <!-- Dusty Slate -->
-        <div class="theme-card skeu-inset" data-theme="theme-dusty-slate">
-          <div class="theme-colors">
-            <div style="background:#161918;"></div>
-            <div style="background:#272C2B;"></div>
-            <div style="background:#C7CEDB;"></div>
-            <div style="background:#94849B;"></div>
-          </div>
-          <span class="theme-name">Dusty Slate</span>
-        </div>
-
-        <!-- Midnight Purple -->
-        <div class="theme-card skeu-inset" data-theme="theme-midnight-purple">
-          <div class="theme-colors">
-            <div style="background:#0D0B1A;"></div>
-            <div style="background:#13102B;"></div>
-            <div style="background:#9382FF;"></div>
-            <div style="background:#FF6EB4;"></div>
-          </div>
-          <span class="theme-name">Midnight Purple</span>
-        </div>
-
-        <!-- Sakura -->
-        <div class="theme-card skeu-inset" data-theme="theme-sakura">
-          <div class="theme-colors">
-            <div style="background:#FFF5F7;"></div>
-            <div style="background:#FFE8ED;"></div>
-            <div style="background:#FF6987;"></div>
-            <div style="background:#FF9AB5;"></div>
-          </div>
-          <span class="theme-name">Sakura</span>
-        </div>
-
-        <!-- Neon Noir -->
-        <div class="theme-card skeu-inset" data-theme="theme-neon-noir">
-          <div class="theme-colors">
-            <div style="background:#0A0A0A;"></div>
-            <div style="background:#111111;"></div>
-            <div style="background:#00FF88;"></div>
-            <div style="background:#FF0066;"></div>
-          </div>
-          <span class="theme-name">Neon Noir</span>
-        </div>
-
-        <!-- Ocean Depths -->
-        <div class="theme-card skeu-inset" data-theme="theme-ocean-depths">
-          <div class="theme-colors">
-            <div style="background:#040D18;"></div>
-            <div style="background:#081828;"></div>
-            <div style="background:#00B4D8;"></div>
-            <div style="background:#CAF0F8;"></div>
-          </div>
-          <span class="theme-name">Ocean Depths</span>
-        </div>
-
-        <!-- 11. Vampire Velvet -->
-        <div class="theme-card skeu-inset" data-theme="theme-vampire-velvet">
-          <div class="theme-colors">
-            <div style="background:#280000"></div>
-            <div style="background:#570000"></div>
-            <div style="background:#B10F2E"></div>
-            <div style="background:#DE7C5A"></div>
-            <div style="background:#FDFFFF"></div>
-          </div>
-          <span class="theme-name">Vampire Velvet</span>
-        </div>
-
-        <!-- 12. Mystic Steel -->
-        <div class="theme-card skeu-inset" data-theme="theme-mystic-steel">
-          <div class="theme-colors">
-            <div style="background:#303633"></div>
-            <div style="background:#7EA2AA"></div>
-            <div style="background:#8BE8CB"></div>
-            <div style="background:#888DA7"></div>
-            <div style="background:#9C7A97"></div>
-          </div>
-          <span class="theme-name">Mystic Steel</span>
-        </div>
-
-        <!-- 13. Jungle Celadon -->
-        <div class="theme-card skeu-inset" data-theme="theme-jungle-celadon">
-          <div class="theme-colors">
-            <div style="background:#12130F"></div>
-            <div style="background:#5B9279"></div>
-            <div style="background:#8FCB9B"></div>
-            <div style="background:#8F8073"></div>
-            <div style="background:#EAE6E5"></div>
-          </div>
-          <span class="theme-name">Jungle Celadon</span>
-        </div>
-
-        <!-- 14. Neon Forest -->
-        <div class="theme-card skeu-inset" data-theme="theme-neon-forest">
-          <div class="theme-colors">
-            <div style="background:#293F14"></div>
-            <div style="background:#386C0B"></div>
-            <div style="background:#38A700"></div>
-            <div style="background:#31D843"></div>
-            <div style="background:#3EFF8B"></div>
-          </div>
-          <span class="theme-name">Neon Forest</span>
-        </div>
-
-        <!-- 15. Retro Pop -->
-        <div class="theme-card skeu-inset" data-theme="theme-retro-pop">
-          <div class="theme-colors">
-            <div style="background:#50514F"></div>
-            <div style="background:#F25F5C"></div>
-            <div style="background:#FFE066"></div>
-            <div style="background:#247BA0"></div>
-            <div style="background:#70C1B3"></div>
-          </div>
-          <span class="theme-name">Retro Pop</span>
-        </div>
-      </div>
-
-      <!-- Settings Options Section -->
-      <div class="settings-options-section" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-direction: column; gap: 14px;">
-        <h4 style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--color-muted-teal); margin: 0;">Audio & Preferences</h4>
-        
-        <!-- Sound Toggle -->
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 500;">UI Sound Effects</span>
-          <button id="setting-sound-toggle" class="segmented-btn active" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
-            <i data-lucide="volume-2"></i> <span id="setting-sound-text">Enabled</span>
+        <!-- Sidebar Navigation -->
+        <nav class="settings-nav-sidebar">
+          <button class="settings-nav-item active" data-settings-section="themes">
+            <i data-lucide="palette"></i> Themes & Appearance
           </button>
-        </div>
+          <button class="settings-nav-item" data-settings-section="audio">
+            <i data-lucide="volume-2"></i> Audio & Sound Effects
+          </button>
+          <button class="settings-nav-item" data-settings-section="export">
+            <i data-lucide="film"></i> Video & Export Defaults
+          </button>
+          <button class="settings-nav-item" data-settings-section="shortcuts">
+            <i data-lucide="keyboard"></i> Hotkey Cheatsheet
+          </button>
+          <button class="settings-nav-item" data-settings-section="info">
+            <i data-lucide="info"></i> App & System Specs
+          </button>
+        </nav>
 
-        <!-- Sound Volume Slider -->
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-sub);">
-            <span>Sound Volume</span>
-            <span id="setting-volume-val">80%</span>
-          </div>
-          <input type="range" id="setting-volume-slider" min="0" max="100" value="80" class="sk-slider">
-        </div>
+        <!-- Content Panels Area -->
+        <div class="settings-content-area">
+          
+          <!-- Section 1: Themes & Appearance -->
+          <div class="settings-section-panel active" id="settings-section-themes">
+            <!-- Standard Modern Themes -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <i data-lucide="palette" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Standard & Modern Themes</h4>
+              </div>
+              <div class="theme-grid">
+                <!-- Seaweed Default -->
+                <div class="theme-card skeu-inset active" data-theme="">
+                  <div class="theme-colors">
+                    <div style="background:#0F1110;"></div>
+                    <div style="background:#171B19;"></div>
+                    <div style="background:#216869;"></div>
+                    <div style="background:#49A078;"></div>
+                  </div>
+                  <span class="theme-name">Seaweed Default</span>
+                </div>
+                
+                <!-- Golden Sand -->
+                <div class="theme-card skeu-inset" data-theme="theme-golden-sand">
+                  <div class="theme-colors">
+                    <div style="background:#FAF7EA;"></div>
+                    <div style="background:#F3EED5;"></div>
+                    <div style="background:#D5B942;"></div>
+                    <div style="background:#C29A26;"></div>
+                  </div>
+                  <span class="theme-name">Golden Sand (Light Luxe)</span>
+                </div>
 
-        <!-- UI Motion Speed -->
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 500;">UI Motion</span>
-          <div class="segmented-control" style="width: auto;">
-            <button class="segmented-btn active" id="setting-motion-smooth" data-motion="smooth">Smooth</button>
-            <button class="segmented-btn" id="setting-motion-snappy" data-motion="snappy">Instant</button>
-          </div>
-        </div>
+                <!-- Fire & Ice -->
+                <div class="theme-card skeu-inset" data-theme="theme-fire-ice">
+                  <div class="theme-colors">
+                    <div style="background:#060B10;"></div>
+                    <div style="background:#121E2C;"></div>
+                    <div style="background:#01BAEF;"></div>
+                    <div style="background:#B80C09;"></div>
+                  </div>
+                  <span class="theme-name">Fire & Ice</span>
+                </div>
 
-        <!-- Canvas Background Grid Style -->
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-main); font-weight: 500;">Transparency Grid</span>
-          <div class="segmented-control" style="width: auto;">
-            <button class="segmented-btn active" id="setting-grid-dark" data-grid="dark">Dark</button>
-            <button class="segmented-btn" id="setting-grid-light" data-grid="light">Light</button>
+                <!-- Aqua Blossom -->
+                <div class="theme-card skeu-inset" data-theme="theme-aqua-blossom">
+                  <div class="theme-colors">
+                    <div style="background:#18191B;"></div>
+                    <div style="background:#282B2F;"></div>
+                    <div style="background:#53D8FB;"></div>
+                    <div style="background:#D4AFB9;"></div>
+                  </div>
+                  <span class="theme-name">Aqua Blossom</span>
+                </div>
+
+                <!-- Oxidized Earth -->
+                <div class="theme-card skeu-inset" data-theme="theme-oxidized-earth">
+                  <div class="theme-colors">
+                    <div style="background:#080B05;"></div>
+                    <div style="background:#182011;"></div>
+                    <div style="background:#BBC5AA;"></div>
+                    <div style="background:#A72608;"></div>
+                  </div>
+                  <span class="theme-name">Oxidized Earth</span>
+                </div>
+
+                <!-- Dusty Slate -->
+                <div class="theme-card skeu-inset" data-theme="theme-dusty-slate">
+                  <div class="theme-colors">
+                    <div style="background:#161918;"></div>
+                    <div style="background:#272C2B;"></div>
+                    <div style="background:#C7CEDB;"></div>
+                    <div style="background:#94849B;"></div>
+                  </div>
+                  <span class="theme-name">Dusty Slate</span>
+                </div>
+
+                <!-- Midnight Purple -->
+                <div class="theme-card skeu-inset" data-theme="theme-midnight-purple">
+                  <div class="theme-colors">
+                    <div style="background:#0D0B1A;"></div>
+                    <div style="background:#13102B;"></div>
+                    <div style="background:#9382FF;"></div>
+                    <div style="background:#FF6EB4;"></div>
+                  </div>
+                  <span class="theme-name">Midnight Purple</span>
+                </div>
+
+                <!-- Sakura -->
+                <div class="theme-card skeu-inset" data-theme="theme-sakura">
+                  <div class="theme-colors">
+                    <div style="background:#FFF5F7;"></div>
+                    <div style="background:#FFE8ED;"></div>
+                    <div style="background:#FF6987;"></div>
+                    <div style="background:#FF9AB5;"></div>
+                  </div>
+                  <span class="theme-name">Sakura</span>
+                </div>
+
+                <!-- Neon Noir -->
+                <div class="theme-card skeu-inset" data-theme="theme-neon-noir">
+                  <div class="theme-colors">
+                    <div style="background:#0A0A0A;"></div>
+                    <div style="background:#111111;"></div>
+                    <div style="background:#00FF88;"></div>
+                    <div style="background:#FF0066;"></div>
+                  </div>
+                  <span class="theme-name">Neon Noir</span>
+                </div>
+
+                <!-- Ocean Depths -->
+                <div class="theme-card skeu-inset" data-theme="theme-ocean-depths">
+                  <div class="theme-colors">
+                    <div style="background:#040D18;"></div>
+                    <div style="background:#081828;"></div>
+                    <div style="background:#00B4D8;"></div>
+                    <div style="background:#CAF0F8;"></div>
+                  </div>
+                  <span class="theme-name">Ocean Depths</span>
+                </div>
+
+                <!-- Vampire Velvet -->
+                <div class="theme-card skeu-inset" data-theme="theme-vampire-velvet">
+                  <div class="theme-colors">
+                    <div style="background:#280000"></div>
+                    <div style="background:#570000"></div>
+                    <div style="background:#B10F2E"></div>
+                    <div style="background:#DE7C5A"></div>
+                  </div>
+                  <span class="theme-name">Vampire Velvet</span>
+                </div>
+
+                <!-- Mystic Steel -->
+                <div class="theme-card skeu-inset" data-theme="theme-mystic-steel">
+                  <div class="theme-colors">
+                    <div style="background:#303633"></div>
+                    <div style="background:#7EA2AA"></div>
+                    <div style="background:#8BE8CB"></div>
+                    <div style="background:#888DA7"></div>
+                  </div>
+                  <span class="theme-name">Mystic Steel</span>
+                </div>
+
+                <!-- Jungle Celadon -->
+                <div class="theme-card skeu-inset" data-theme="theme-jungle-celadon">
+                  <div class="theme-colors">
+                    <div style="background:#12130F"></div>
+                    <div style="background:#5B9279"></div>
+                    <div style="background:#8FCB9B"></div>
+                    <div style="background:#8F8073"></div>
+                  </div>
+                  <span class="theme-name">Jungle Celadon</span>
+                </div>
+
+                <!-- Neon Forest -->
+                <div class="theme-card skeu-inset" data-theme="theme-neon-forest">
+                  <div class="theme-colors">
+                    <div style="background:#293F14"></div>
+                    <div style="background:#386C0B"></div>
+                    <div style="background:#38A700"></div>
+                    <div style="background:#3EFF8B"></div>
+                  </div>
+                  <span class="theme-name">Neon Forest</span>
+                </div>
+
+                <!-- Retro Pop -->
+                <div class="theme-card skeu-inset" data-theme="theme-retro-pop">
+                  <div class="theme-colors">
+                    <div style="background:#50514F"></div>
+                    <div style="background:#F25F5C"></div>
+                    <div style="background:#FFE066"></div>
+                    <div style="background:#247BA0"></div>
+                  </div>
+                  <span class="theme-name">Retro Pop</span>
+                </div>
+
+                <!-- Nord -->
+                <div class="theme-card skeu-inset" data-theme="theme-nord">
+                  <div class="theme-colors">
+                    <div style="background:#2E3440"></div>
+                    <div style="background:#3B4252"></div>
+                    <div style="background:#88C0D0"></div>
+                    <div style="background:#A3BE8C"></div>
+                  </div>
+                  <span class="theme-name">Nord</span>
+                </div>
+
+                <!-- Solarized Dark -->
+                <div class="theme-card skeu-inset" data-theme="theme-solarized-dark">
+                  <div class="theme-colors">
+                    <div style="background:#002B36"></div>
+                    <div style="background:#073642"></div>
+                    <div style="background:#268BD2"></div>
+                    <div style="background:#2AA198"></div>
+                  </div>
+                  <span class="theme-name">Solarized Dark</span>
+                </div>
+
+                <!-- Synthwave -->
+                <div class="theme-card skeu-inset" data-theme="theme-synthwave">
+                  <div class="theme-colors">
+                    <div style="background:#1A0B2E"></div>
+                    <div style="background:#6A1B8F"></div>
+                    <div style="background:#FF2E97"></div>
+                    <div style="background:#00E5FF"></div>
+                  </div>
+                  <span class="theme-name">Synthwave</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Retro & Special Themes Section (Locked / Coming Soon) -->
+            <div style="margin-top: 20px; position: relative;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <i data-lucide="lock" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                  <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Special & Retro Aesthetics</h4>
+                </div>
+                <span class="badge-sk" style="background: var(--bg-recessed); border: 1px solid var(--border-color); color: var(--accent-primary); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; display: flex; align-items: center; gap: 4px;">
+                  <i data-lucide="lock" style="width: 11px; height: 11px;"></i> Special Themes Coming Soon
+                </span>
+              </div>
+              <div class="theme-grid" style="filter: blur(4px); opacity: 0.55; pointer-events: none; user-select: none;">
+                <!-- Frutiger Aero -->
+                <div class="theme-card skeu-inset special-theme-card" data-theme="theme-frutiger-aero" style="background: linear-gradient(180deg, #CBE5FF, #76B6FF); border: 2px solid rgba(255,255,255,0.9);">
+                  <div class="theme-colors">
+                    <div style="background:#CBE5FF"></div>
+                    <div style="background:#0099FF"></div>
+                    <div style="background:#2BE072"></div>
+                    <div style="background:#FFFFFF"></div>
+                  </div>
+                  <span class="theme-name" style="color:#002244; font-weight:700;">Frutiger Aero</span>
+                </div>
+
+                <!-- Terminal -->
+                <div class="theme-card skeu-inset special-theme-card" data-theme="theme-terminal" style="background: #0A0E0A; border: 1.5px solid #33FF66;">
+                  <div class="theme-colors">
+                    <div style="background:#0A0E0A"></div>
+                    <div style="background:#101610"></div>
+                    <div style="background:#33FF66"></div>
+                    <div style="background:#1F993D"></div>
+                  </div>
+                  <span class="theme-name" style="color:#33FF66; font-weight:700;">Terminal</span>
+                </div>
+
+                <!-- Windows XP -->
+                <div class="theme-card skeu-inset special-theme-card" data-theme="theme-windows-xp" style="background: #ECE9D8; border: 2px solid #003C9D;">
+                  <div class="theme-colors">
+                    <div style="background:#0055EA"></div>
+                    <div style="background:#245EDB"></div>
+                    <div style="background:#ECE9D8"></div>
+                    <div style="background:#3CC100"></div>
+                  </div>
+                  <span class="theme-name" style="color:#003C9D; font-weight:700;">Windows XP (Luna)</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          <!-- Section 2: Audio & Sound Effects -->
+          <div class="settings-section-panel hidden" id="settings-section-audio">
+            <div class="settings-card-box">
+              <h4 class="settings-card-title"><i data-lucide="volume-2" style="width:18px; height:18px; color:var(--accent-primary);"></i> UI Sound Effects & Feedback</h4>
+              
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Skeuomorphic Audio Feedback</span>
+                  <span class="settings-desc">Synthesized Web Audio clicks, pops, and slider feedback tones.</span>
+                </div>
+                <button id="setting-sound-toggle" class="segmented-btn active" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
+                  <i data-lucide="volume-2"></i> <span id="setting-sound-text">Enabled</span>
+                </button>
+              </div>
+
+              <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="settings-label">Master Sound Volume</span>
+                  <span id="setting-volume-val" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary);">80%</span>
+                </div>
+                <input type="range" id="setting-volume-slider" min="0" max="100" value="80" class="sk-slider">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Video & Export Defaults -->
+          <div class="settings-section-panel hidden" id="settings-section-export">
+            <div class="settings-card-box">
+              <h4 class="settings-card-title"><i data-lucide="film" style="width:18px; height:18px; color:var(--accent-primary);"></i> Video Studio & Export Preferences</h4>
+              
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Default Export Container</span>
+                  <span class="settings-desc">High-bitrate WebCodecs container format for animated gradient sequences.</span>
+                </div>
+                <div class="segmented-control" style="width: auto;">
+                  <button class="segmented-btn active" id="setting-export-fmt-mp4" data-fmt="mp4">MP4 (H.264)</button>
+                  <button class="segmented-btn" id="setting-export-fmt-webm" data-fmt="webm">WebM (VP8)</button>
+                </div>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Target Export Frame Rate</span>
+                  <span class="settings-desc">Output video framerate encoding quality.</span>
+                </div>
+                <div class="segmented-control" style="width: auto;">
+                  <button class="segmented-btn active" id="setting-export-fps-60" data-fps="60">60 FPS</button>
+                  <button class="segmented-btn" id="setting-export-fps-30" data-fps="30">30 FPS</button>
+                </div>
+              </div>
+
+              <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="settings-label">Default Video Target Bitrate</span>
+                  <span id="setting-export-bitrate-val" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary);">20 Mbps</span>
+                </div>
+                <input type="range" id="setting-export-bitrate-slider" min="5" max="50" value="20" class="sk-slider">
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Alpha Channel Transparency</span>
+                  <span class="settings-desc">Export video/image with transparent background grid preserved.</span>
+                </div>
+                <button id="setting-export-alpha-toggle" class="segmented-btn" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
+                  <i data-lucide="layers"></i> <span id="setting-export-alpha-text">Disabled</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Hotkey Cheatsheet -->
+          <div class="settings-section-panel hidden" id="settings-section-shortcuts">
+            <div class="settings-card-box">
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <h4 class="settings-card-title"><i data-lucide="keyboard" style="width:18px; height:18px; color:var(--accent-primary);"></i> Keyboard Shortcuts & Quick Actions</h4>
+                <button id="copy-hotkeys-btn" class="btn-sk btn-secondary-sk" style="padding: 4px 10px; font-size: 0.72rem;">
+                  <i data-lucide="copy"></i> Copy Cheatsheet
+                </button>
+              </div>
+              
+              <table class="shortcut-table">
+                <thead>
+                  <tr>
+                    <th>Action / Feature</th>
+                    <th>Shortcut</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Switch Workspace Mode</td>
+                    <td><span class="shortcut-key">1</span> <span class="shortcut-key">2</span> <span class="shortcut-key">3</span></td>
+                    <td>Toggle between Image, Gradient, and Video Studio modes</td>
+                  </tr>
+                  <tr>
+                    <td>Pan / Hand Tool</td>
+                    <td><span class="shortcut-key">Space</span></td>
+                    <td>Hold space to pan around canvas viewports</td>
+                  </tr>
+                  <tr>
+                    <td>Undo Image Edit</td>
+                    <td><span class="shortcut-key">Ctrl</span> + <span class="shortcut-key">Z</span></td>
+                    <td>Revert last brush stroke or color eraser action</td>
+                  </tr>
+                  <tr>
+                    <td>Redo Image Edit</td>
+                    <td><span class="shortcut-key">Ctrl</span> + <span class="shortcut-key">Shift</span> + <span class="shortcut-key">Z</span></td>
+                    <td>Re-apply undone edit step</td>
+                  </tr>
+                  <tr>
+                    <td>Toggle Sound Effects</td>
+                    <td><span class="shortcut-key">M</span></td>
+                    <td>Mute or enable UI audio feedback</td>
+                  </tr>
+                  <tr>
+                    <td>Export Animation</td>
+                    <td><span class="shortcut-key">Ctrl</span> + <span class="shortcut-key">E</span></td>
+                    <td>Open export video/image dialog</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 6: App & System Specs -->
+          <div class="settings-section-panel hidden" id="settings-section-info">
+            <div class="settings-card-box">
+              <h4 class="settings-card-title"><i data-lucide="info" style="width:18px; height:18px; color:var(--accent-primary);"></i> Application Specifications</h4>
+              
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Gradial Engine Version</span>
+                  <span class="settings-desc">Build 2.4.0 — High-Performance Vanilla JS</span>
+                </div>
+                <span style="font-size:0.8rem; font-weight:700; color:var(--accent-primary);">v2.4.0</span>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">Icon Engine & Offline Suite</span>
+                  <span class="settings-desc">Bundled Lucide Vector Suite (100% offline)</span>
+                </div>
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Lucide v0.294</span>
+              </div>
+
+              <div class="settings-row">
+                <div class="settings-row-info">
+                  <span class="settings-label">WebCodecs Video Encoder Status</span>
+                  <span class="settings-desc">Hardware VideoEncoder API available for instant MP4 muxing.</span>
+                </div>
+                <span style="font-size:0.8rem; font-weight:700; color:var(--accent-primary);">Active & Hardware Accelerated</span>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
   </div>
 
@@ -319,20 +603,14 @@
               <span class="section-title-text">Target Color</span>
             </div>
 
-            <div class="color-display-box">
+            <div class="color-display-box" id="target-color-box" title="Click to Pick Color from Image" style="cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease;">
               <div class="color-preview-thumb" id="target-color-thumb" style="background-color: #FFFFFF;"></div>
-              <div class="color-details">
+              <div class="color-details" style="flex: 1;">
                 <span class="color-details-label">Selected Hex</span>
                 <span class="color-details-hex" id="target-color-hex">#FFFFFF</span>
               </div>
+              <i data-lucide="pipette" style="width: 16px; height: 16px; color: var(--accent-primary); opacity: 0.8;"></i>
             </div>
-
-            <div style="height: 10px;"></div>
-
-            <button class="btn-sk btn-secondary-sk" id="pick-color-btn" disabled>
-              <i data-lucide="pipette"></i>
-              <span>Pick Color from Image</span>
-            </button>
           </div>
 
           <div class="divider"></div>
@@ -411,6 +689,47 @@
             </div>
           </div>
 
+          <!-- Photographic Styles 2D Controller Pad -->
+          <div class="divider"></div>
+          <div class="section-block">
+            <div class="style-pad-wrapper">
+              <div class="style-pad-header">
+                <span class="style-pad-title"><i data-lucide="sliders" style="width:14px; height:14px; color:var(--color-seaweed);"></i> Photographic Style</span>
+                <span class="style-pad-readout" id="img-style-pad-readout">Tone: 0 | Warmth: 0</span>
+              </div>
+              <div class="style-pad-touch-area" id="img-style-pad-touch">
+                <span class="style-pad-axis-label axis-top">+ Contrast</span>
+                <span class="style-pad-axis-label axis-bottom">- Contrast</span>
+                <span class="style-pad-axis-label axis-left">Cool</span>
+                <span class="style-pad-axis-label axis-right">Warm</span>
+                
+                <div class="style-pad-crosshair-h"></div>
+                <div class="style-pad-crosshair-v"></div>
+
+                <div class="style-pad-grid-dots" id="img-style-pad-dots">
+                  <!-- 49 dots generated by JS -->
+                </div>
+
+                <div class="style-pad-glow" id="img-style-pad-glow"></div>
+                <div class="style-pad-puck" id="img-style-pad-puck"></div>
+              </div>
+              <button class="style-pad-reset-btn" id="img-style-pad-reset-btn">Reset Style Pad</button>
+            </div>
+          </div>
+
+          <!-- Cinematic Filters -->
+          <div class="divider"></div>
+          <div class="section-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text">Cinematic Filters</span>
+            </div>
+
+            <div class="lut-preset-grid" id="img-lut-grid">
+              <!-- Dynamically populated filter cards -->
+            </div>
+          </div>
+
           <!-- Image Adjustments Filters -->
           <div class="divider"></div>
           <div class="section-block">
@@ -472,6 +791,8 @@
             </div>
           </div>
 
+
+
           <!-- Transform -->
           <div class="divider"></div>
           <div class="section-block">
@@ -492,6 +813,13 @@
           <div class="section-block" id="image-export-block">
             <div class="status-pill" style="opacity: 0.7;">Upload an image to edit</div>
           </div>
+
+          <!-- Sidebar Footer -->
+          <div class="divider"></div>
+          <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <button class="open-terms-modal-btn terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
+          </div>
         </div>
 
 
@@ -504,21 +832,45 @@
               <div class="section-indicator"></div>
               <span class="section-title-text">Gradient Type</span>
             </div>
-            <div class="segmented-control">
-              <button class="segmented-btn active" data-gmode="linear">Linear</button>
-              <button class="segmented-btn" data-gmode="4-corner">4-Corner</button>
-              <button class="segmented-btn" data-gmode="animated">Animated</button>
+            <div class="segmented-control" style="gap: 4px;">
+              <button class="segmented-btn active" data-gmode="linear" style="flex: 1;">Linear</button>
+              <button class="segmented-btn" data-gmode="positional" style="flex: 1;">Positional</button>
+              <button class="segmented-btn" data-gmode="animated" style="flex: 1;"><i data-lucide="play" style="width:13px; height:13px;"></i> Animated</button>
             </div>
           </div>
 
-          <!-- Color Stops (Linear / Animated) -->
+          <!-- Animated DaVinci Fusion Effects -->
+          <div id="animated-type-container" class="section-block hidden">
+            <div class="section-header">
+              <div class="section-indicator" style="background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></div>
+              <span class="section-title-text">Fusion Effects</span>
+            </div>
+
+            <div class="slider-container" style="margin-bottom: 10px;">
+              <div class="slider-info-row">
+                <span class="slider-title">Fast Noise Displacement</span>
+                <span class="slider-val-badge" id="animated-displacement-val">35%</span>
+              </div>
+              <input type="range" id="animated-displacement-slider" min="0" max="100" step="1" value="35" class="sk-slider">
+            </div>
+
+            <div class="slider-container" style="margin-bottom: 10px;">
+              <div class="slider-info-row">
+                <span class="slider-title">Gaussian Blur Softness</span>
+                <span class="slider-val-badge" id="animated-blur-val">0px</span>
+              </div>
+              <input type="range" id="animated-blur-slider" min="0" max="50" step="1" value="0" class="sk-slider">
+            </div>
+          </div>
+
+          <!-- Color Stops (Linear / Animated / Aurora) -->
           <div id="color-stops-container" class="section-block">
             <div class="section-header">
               <div class="section-indicator"></div>
-              <span class="section-title-text">Color Stops</span>
+              <span class="section-title-text">Color Palette</span>
             </div>
             <div id="color-stops-list" style="display: flex; flex-direction: column; gap: 8px;">
-              <!-- Dynamic items -->
+              <!-- Dynamic color stop items -->
             </div>
             <div style="height: 10px;"></div>
             <button class="btn-sk btn-dashed-sk" id="add-color-stop-btn">
@@ -526,30 +878,54 @@
             </button>
           </div>
 
-          <!-- 4-Corner Mesh Grid (With Per-Corner Intensity) -->
-          <div id="corner-mesh-container" class="section-block hidden">
-            <div class="section-header">
-              <div class="section-indicator"></div>
-              <span class="section-title-text">Corner Points & Intensity</span>
+          <!-- Positional Points (N-Point Gradients) -->
+          <div id="positional-container" class="section-block hidden">
+            <div class="section-header" style="justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="section-indicator" style="background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></div>
+                <span class="section-title-text">Positional Control Points</span>
+              </div>
+              <button class="btn-sk btn-secondary-sk" id="add-positional-point-btn" style="padding: 4px 8px; font-size: 0.72rem;">
+                <i data-lucide="plus"></i> Add Point
+              </button>
             </div>
-            <div class="corner-grid" id="corner-grid-list">
-              <!-- Dynamic 4 corner cards with per-corner sliders -->
+            <div id="positional-points-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+              <!-- Dynamic positional points -->
             </div>
           </div>
+
+          
 
           <!-- Rotation Angle (Linear) -->
           <div id="angle-container" class="section-block">
             <div class="divider"></div>
-            <div class="slider-container">
-              <div class="slider-info-row">
-                <span class="slider-title">Rotation Angle</span>
-                <span class="slider-val-badge" id="angle-val">90°</span>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="section-title-text" style="font-size: 0.82rem; font-weight: 700;">Rotational Angle</span>
               </div>
-              <input type="range" id="angle-slider" min="0" max="360" value="90">
+
+              <!-- Interactive Angle Dial & Slider Grid (Slider + Circle Dial Wheel Only) -->
+              <div style="display: flex; align-items: center; gap: 14px; background: var(--bg-card); padding: 12px; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+                <!-- Angle Dial Wheel (Circle Way) -->
+                <div id="angle-dial-wheel" style="width: 52px; height: 52px; border-radius: 50%; background: var(--bg-recessed); border: 2px solid var(--border-color); position: relative; cursor: grab; flex-shrink: 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2); touch-action: none;">
+                  <div id="angle-dial-needle" style="width: 2px; height: 20px; background: var(--accent-primary); position: absolute; top: 6px; left: 25px; transform-origin: bottom center; transform: rotate(90deg); border-radius: 2px; box-shadow: 0 0 8px var(--accent-primary);"></div>
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-main); position: absolute; top: 22px; left: 22px;"></div>
+                </div>
+
+                <!-- Angle Slider (Slider Way) -->
+                <div class="slider-container" style="flex: 1;">
+                  <div class="slider-info-row" style="margin-bottom: 6px;">
+                    <span class="slider-title" style="font-size: 0.72rem;">Sweep Angle</span>
+                    <span class="slider-val-badge" id="angle-val">90°</span>
+                  </div>
+                  <input type="range" id="angle-slider" min="0" max="360" value="90" class="sk-slider">
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Timeline & Keyframes now lives full-width below the preview viewport, see #media-timeline-container in the workspace -->
+          <!-- Timeline & Keyframes -->
           <div id="angle-container-timeline-anchor" style="display:none;"></div>
 
           <!-- Texture Noise Switcher -->
@@ -612,72 +988,36 @@
             </div>
           </div>
 
+          <!-- Sidebar Footer -->
+          <div class="divider"></div>
+          <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <button id="open-terms-modal-btn" class="terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
+          </div>
         </div>
 
-        <!-- ================= VIDEO TAB (PLACEHOLDER) ================= -->
+        <!-- ================= VIDEO TAB ================= -->
         <div id="sidebar-video-controls" class="hidden">
           <div class="section-block">
             <div class="section-header">
               <div class="section-indicator"></div>
-              <span class="section-title-text">Video</span>
+              <span class="section-title-text">Video Studio</span>
             </div>
-            <button class="btn-sk btn-secondary-sk" id="video-upload-btn" style="width:100%;">
-              <i data-lucide="upload"></i> Upload Video
-            </button>
-            <input type="file" id="video-file-input" accept="video/*" class="hidden">
-            <div id="video-file-name" style="font-size:0.72rem; color:var(--text-muted); margin-top:8px; text-align:center;">No file selected</div>
-          </div>
-
-          <div class="divider"></div>
-          <div class="section-block" id="video-grading-block" style="opacity:0.4; pointer-events:none;">
-            <div class="section-header">
-              <div class="section-indicator"></div>
-              <span class="section-title-text">Color Correction</span>
-            </div>
-
-            <div class="slider-container" style="margin-bottom:8px;">
-              <div class="slider-info-row"><span class="slider-title">Brightness</span><span class="slider-val-badge" id="vid-brightness-val">100%</span></div>
-              <input type="range" id="vid-brightness" min="0" max="200" value="100">
-            </div>
-            <div class="slider-container" style="margin-bottom:8px;">
-              <div class="slider-info-row"><span class="slider-title">Contrast</span><span class="slider-val-badge" id="vid-contrast-val">100%</span></div>
-              <input type="range" id="vid-contrast" min="0" max="200" value="100">
-            </div>
-            <div class="slider-container" style="margin-bottom:8px;">
-              <div class="slider-info-row"><span class="slider-title">Saturation</span><span class="slider-val-badge" id="vid-saturate-val">100%</span></div>
-              <input type="range" id="vid-saturate" min="0" max="200" value="100">
-            </div>
-            <div class="slider-container" style="margin-bottom:8px;">
-              <div class="slider-info-row"><span class="slider-title">Temperature</span><span class="slider-val-badge" id="vid-temp-val">0</span></div>
-              <input type="range" id="vid-temp" min="-100" max="100" value="0">
-            </div>
-            <div class="slider-container">
-              <div class="slider-info-row"><span class="slider-title">Hue Rotate</span><span class="slider-val-badge" id="vid-hue-val">0°</span></div>
-              <input type="range" id="vid-hue" min="0" max="360" value="0">
+            <div style="text-align:center; padding:30px 16px;">
+              <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--color-stormy-teal)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
+                <i data-lucide="film" style="width:24px; height:24px; color:#fff;"></i>
+              </div>
+              <p style="font-size:0.9rem; font-weight:700; color:var(--accent-primary); margin-bottom:6px;">Coming Soon</p>
+              <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.5;">Video color grading, cinematic LUTs, and high-bitrate export are currently in development.</p>
             </div>
           </div>
 
+          <!-- Sidebar Footer -->
           <div class="divider"></div>
-          <div class="section-block" id="video-resize-block" style="opacity:0.4; pointer-events:none;">
-            <div class="section-header">
-              <div class="section-indicator"></div>
-              <span class="section-title-text">Resize &amp; Enhance</span>
-            </div>
-            <div class="segmented-control">
-              <button class="segmented-btn active" id="vid-scale-1x" data-scale="1">1×</button>
-              <button class="segmented-btn" id="vid-scale-15x" data-scale="1.5">1.5×</button>
-              <button class="segmented-btn" id="vid-scale-2x" data-scale="2">2×</button>
-            </div>
-            <div class="slider-container" style="margin-top:10px;">
-              <div class="slider-info-row"><span class="slider-title">Sharpen</span><span class="slider-val-badge" id="vid-sharpen-val">0%</span></div>
-              <input type="range" id="vid-sharpen" min="0" max="100" value="0">
-            </div>
+          <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <button class="open-terms-modal-btn terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
           </div>
-
-          <div class="divider"></div>
-          <button class="btn-sk btn-primary-sk" id="video-export-btn" style="width:100%; opacity:0.4; pointer-events:none;" disabled>
-            <i data-lucide="download"></i> Export Graded Video
-          </button>
         </div>
 
       </div>
@@ -743,13 +1083,14 @@
         <!-- Live Gradient Viewport -->
         <div style="position: relative; display: flex; flex: 1; min-height: 0;">
           <div class="gradient-preview-viewport" id="gradient-live-viewport"></div>
+          <div class="canvas-handle-overlay" id="canvas-handles-overlay"></div>
         </div>
 
         <!-- ================= FULL-WIDTH TIMELINE (moved from sidebar) ================= -->
         <div id="media-timeline-container" class="gradient-bottom-timeline hidden">
           <div class="media-player-card">
             <div class="media-player-display">
-              <span class="media-title"><i data-lucide="play-circle"></i> Timeline</span>
+              <span class="media-title" id="timeline-title-display"><i data-lucide="play-circle"></i> Timeline</span>
               <div style="display:flex; align-items:center; gap:12px;">
                 <span class="slider-title" style="font-size:0.68rem;">Cycle Duration</span>
                 <input type="range" id="animation-duration-slider" min="1" max="20" step="0.5" value="5" style="width:90px;">
@@ -778,32 +1119,26 @@
               </button>
             </div>
 
-            <!-- Dynamic Keyframes List: horizontal chip row, click a chip to edit it -->
+            <!-- Keyframes List for Radial Wave -->
             <div id="media-keyframes-list" class="kf-chip-row"></div>
+
+            <!-- Effect-Tailored Motion Presets Bar -->
+            <div id="effect-timeline-presets" class="effect-timeline-preset-bar"></div>
           </div>
         </div>
       </div>
 
       <!-- ================= VIDEO WORKSPACE ================= -->
       <div id="workspace-video-layout" class="workspace-layout hidden">
-        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:#000;">
-          <div id="video-empty-state" style="text-align:center; padding:40px;">
-            <div class="upload-icon-circle" style="margin:0 auto 20px;">
-              <i data-lucide="video" style="width:28px;height:28px;color:var(--color-muted-teal);"></i>
+        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:var(--bg-recessed);">
+          <div style="text-align:center; padding:60px 40px; max-width:480px;">
+            <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, var(--color-stormy-teal))); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+              <i data-lucide="film" style="width:36px; height:36px; color:#fff;"></i>
             </div>
-            <h3 style="font-size:1.2rem; font-weight:700; color:var(--text-main); margin-bottom:8px;">Video Editor</h3>
-            <p style="font-size:0.85rem; color:var(--text-muted);">Upload a video from the sidebar to start correcting.</p>
+            <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:12px; letter-spacing:-0.02em;">Video Studio</h2>
+            <p style="font-size:1rem; font-weight:600; color:var(--accent-primary); margin-bottom:8px;">Coming Soon</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">The Video Color Grading Studio is currently under development. Full support for cinematic LUTs, color correction, and high-bitrate export is on the way.</p>
           </div>
-          <video id="video-player-el" class="hidden" controls style="max-width:100%; max-height:100%; border-radius:var(--radius-md); box-shadow:0 10px 30px rgba(0,0,0,0.5);"></video>
-          <svg width="0" height="0" style="position:absolute">
-            <filter id="vid-temp-filter">
-              <feColorMatrix id="vid-temp-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
-            </filter>
-            <filter id="vid-export-filter">
-              <feColorMatrix id="vid-export-color-matrix" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
-              <feConvolveMatrix id="vid-export-sharpen-matrix" order="3" kernelMatrix="0 0 0 0 1 0 0 0 0" preserveAlpha="true" />
-            </filter>
-          </svg>
         </div>
       </div>
 
@@ -840,11 +1175,25 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 12px; align-items: center; background: var(--bg-recessed); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+      <div style="display: flex; gap: 10px; align-items: center; background: var(--bg-recessed); padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
         <div id="cp-preview-swatch" style="width: 36px; height: 36px; border-radius: 8px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.4); flex-shrink: 0;"></div>
         <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
           <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">HEX Code</span>
-          <input type="text" id="cp-hex-input" value="#FFFFFF" style="width: 100%; background: transparent; border: none; color: var(--text-white); font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; outline: none;">
+          <input type="text" id="cp-hex-input" value="#FFFFFF" style="width: 100%; background: transparent; border: none; color: var(--text-main); font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; outline: none;">
+        </div>
+        <div style="display: flex; gap: 4px; border-left: 1px solid var(--border-color); padding-left: 10px;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; width: 28px;">
+            <span style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700;">R</span>
+            <input type="number" id="cp-r-input" min="0" max="255" value="255" style="width: 28px; background: transparent; border: none; color: var(--text-main); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-align: center; outline: none;">
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; width: 28px;">
+            <span style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700;">G</span>
+            <input type="number" id="cp-g-input" min="0" max="255" value="255" style="width: 28px; background: transparent; border: none; color: var(--text-main); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-align: center; outline: none;">
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; width: 28px;">
+            <span style="font-size: 0.6rem; color: var(--text-muted); font-weight: 700;">B</span>
+            <input type="number" id="cp-b-input" min="0" max="255" value="255" style="width: 28px; background: transparent; border: none; color: var(--text-main); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; text-align: center; outline: none;">
+          </div>
         </div>
       </div>
 
