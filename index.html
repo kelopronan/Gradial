@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="assets/lucide.min.js"></script>
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 
@@ -75,7 +74,7 @@
 
       <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 12px;">
         <button class="btn-sk btn-primary-sk" id="terms-modal-accept-btn" style="padding: 8px 20px; font-size: 0.85rem;">
-          Close & Accept
+          Accept
         </button>
       </div>
     </div>
@@ -335,18 +334,18 @@
               </div>
             </div>
 
-            <!-- Retro & Special Themes Section (Locked / Coming Soon) -->
+            <!-- Retro & Special Themes Section (Unlocked & Unblurred) -->
             <div style="margin-top: 20px; position: relative;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="lock" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                  <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
                   <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Special & Retro Aesthetics</h4>
                 </div>
                 <span class="badge-sk" style="background: var(--bg-recessed); border: 1px solid var(--border-color); color: var(--accent-primary); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; display: flex; align-items: center; gap: 4px;">
-                  <i data-lucide="lock" style="width: 11px; height: 11px;"></i> Special Themes Coming Soon
+                  <i data-lucide="sparkles" style="width: 11px; height: 11px;"></i> Special Themes Unlocked
                 </span>
               </div>
-              <div class="theme-grid" style="filter: blur(4px); opacity: 0.55; pointer-events: none; user-select: none;">
+              <div class="theme-grid" style="filter: none; opacity: 1; pointer-events: auto; user-select: auto;">
                 <!-- Frutiger Aero -->
                 <div class="theme-card skeu-inset special-theme-card" data-theme="theme-frutiger-aero" style="background: linear-gradient(180deg, #CBE5FF, #76B6FF); border: 2px solid rgba(255,255,255,0.9);">
                   <div class="theme-colors">
@@ -358,15 +357,15 @@
                   <span class="theme-name" style="color:#002244; font-weight:700;">Frutiger Aero</span>
                 </div>
 
-                <!-- Terminal -->
-                <div class="theme-card skeu-inset special-theme-card" data-theme="theme-terminal" style="background: #0A0E0A; border: 1.5px solid #33FF66;">
+                <!-- Original Xbox (2001) -->
+                <div class="theme-card skeu-inset special-theme-card" data-theme="theme-xbox" style="background: #001C05; border: 1.5px solid #39FF14;">
                   <div class="theme-colors">
-                    <div style="background:#0A0E0A"></div>
-                    <div style="background:#101610"></div>
-                    <div style="background:#33FF66"></div>
-                    <div style="background:#1F993D"></div>
+                    <div style="background:#001C05"></div>
+                    <div style="background:#003B0D"></div>
+                    <div style="background:#55FF00"></div>
+                    <div style="background:#39FF14"></div>
                   </div>
-                  <span class="theme-name" style="color:#33FF66; font-weight:700;">Terminal</span>
+                  <span class="theme-name" style="color:#55FF00; font-weight:800;">Original Xbox</span>
                 </div>
 
                 <!-- Windows XP -->
@@ -576,22 +575,22 @@
           </div>
           <button id="open-settings-btn" class="settings-icon-btn" title="Theme Settings"><i data-lucide="settings"></i></button>
         </div>
+      </div>
 
-        <!-- Mode Pill Switcher -->
-        <div class="tab-pill-container">
+      <div class="sidebar-content">
+
+        <!-- Sidebar Mode Pill Switcher -->
+        <div class="tab-pill-container" style="margin-bottom: 12px;">
           <button class="tab-pill-btn active" id="tab-btn-image" data-tab="image">
             <i data-lucide="image"></i> Image
           </button>
           <button class="tab-pill-btn" id="tab-btn-gradient" data-tab="gradient">
             <i data-lucide="palette"></i> Gradient
           </button>
-          <button class="tab-pill-btn" id="tab-btn-video" data-tab="video">
+          <button class="tab-pill-btn" id="tab-btn-video" data-tab="video" style="opacity: 0.65;" title="Video Studio (Coming Soon)">
             <i data-lucide="video"></i> Video
           </button>
         </div>
-      </div>
-
-      <div class="sidebar-content">
 
         <!-- ================= IMAGE / ERASER TAB ================= -->
         <div id="sidebar-image-controls">
@@ -679,11 +678,8 @@
               <div style="height: 10px;"></div>
 
               <div class="segmented-control">
-                <button class="segmented-btn active" id="brush-action-erase" data-action="erase">
-                  <i data-lucide="eraser"></i> Erase
-                </button>
-                <button class="segmented-btn" id="brush-action-restore" data-action="restore">
-                  <i data-lucide="rotate-ccw"></i> Restore
+                <button class="segmented-btn active" id="brush-action-erase" data-action="erase" style="width: 100%;">
+                  <i data-lucide="eraser"></i> Erase Brush
                 </button>
               </div>
             </div>
@@ -695,7 +691,6 @@
             <div class="style-pad-wrapper">
               <div class="style-pad-header">
                 <span class="style-pad-title"><i data-lucide="sliders" style="width:14px; height:14px; color:var(--color-seaweed);"></i> Photographic Style</span>
-                <span class="style-pad-readout" id="img-style-pad-readout">Tone: 0 | Warmth: 0</span>
               </div>
               <div class="style-pad-touch-area" id="img-style-pad-touch">
                 <span class="style-pad-axis-label axis-top">+ Contrast</span>
@@ -923,6 +918,18 @@
                 </div>
               </div>
             </div>
+
+            <!-- Color Midpoint Balance -->
+            <div style="height: 12px;"></div>
+            <div class="section-block">
+              <div class="slider-container">
+                <div class="slider-info-row" style="margin-bottom: 6px;">
+                  <span class="slider-title" style="font-size: 0.72rem; font-weight: 700;">Color Midpoint Balance</span>
+                  <span class="slider-val-badge" id="gradient-midpoint-val">50%</span>
+                </div>
+                <input type="range" id="gradient-midpoint-slider" min="5" max="95" value="50" class="sk-slider">
+              </div>
+            </div>
           </div>
 
           <!-- Timeline & Keyframes -->
@@ -974,7 +981,7 @@
               <div style="display: flex; gap: 8px;">
                 <button class="btn-sk btn-primary-sk" id="gradient-export-main-btn" style="flex: 1;">
                   <i data-lucide="download"></i>
-                  <span>Export FHD</span>
+                  <span>Export Gradient</span>
                 </button>
                 <button class="btn-sk btn-icon-sk" id="gradient-export-chevron-btn">
                   <i data-lucide="chevron-down"></i>
@@ -998,18 +1005,101 @@
 
         <!-- ================= VIDEO TAB ================= -->
         <div id="sidebar-video-controls" class="hidden">
+          <!-- Video Source Block -->
           <div class="section-block">
             <div class="section-header">
               <div class="section-indicator"></div>
-              <span class="section-title-text">Video Studio</span>
+              <span class="section-title-text">Video Source</span>
             </div>
-            <div style="text-align:center; padding:30px 16px;">
-              <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--color-stormy-teal)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);">
-                <i data-lucide="film" style="width:24px; height:24px; color:#fff;"></i>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <input type="file" accept="video/*" id="video-file-input" class="hidden">
+              <button class="btn-sk btn-primary-sk" id="video-upload-btn">
+                <i data-lucide="upload-cloud"></i> Upload Video File
+              </button>
+              <button class="btn-sk btn-secondary-sk" id="btn-load-sample-video">
+                <i data-lucide="play-circle"></i> Load Interactive Sample
+              </button>
+              <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;" id="video-file-name">Interactive Sample Video Active</div>
+            </div>
+          </div>
+
+          <!-- Video Color Grading Block -->
+          <div class="section-block" id="video-grading-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text">Color Grading</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:4px;">
+                  <span>Brightness</span>
+                  <span id="vid-brightness-val" style="color:var(--accent-primary);">100%</span>
+                </div>
+                <input type="range" id="vid-brightness" min="0" max="200" value="100">
               </div>
-              <p style="font-size:0.9rem; font-weight:700; color:var(--accent-primary); margin-bottom:6px;">Coming Soon</p>
-              <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.5;">Video color grading, cinematic LUTs, and high-bitrate export are currently in development.</p>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:4px;">
+                  <span>Contrast</span>
+                  <span id="vid-contrast-val" style="color:var(--accent-primary);">100%</span>
+                </div>
+                <input type="range" id="vid-contrast" min="0" max="200" value="100">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:4px;">
+                  <span>Saturation</span>
+                  <span id="vid-saturate-val" style="color:var(--accent-primary);">100%</span>
+                </div>
+                <input type="range" id="vid-saturate" min="0" max="200" value="100">
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:4px;">
+                  <span>Hue Rotate</span>
+                  <span id="vid-hue-val" style="color:var(--accent-primary);">0°</span>
+                </div>
+                <input type="range" id="vid-hue" min="-180" max="180" value="0">
+              </div>
             </div>
+          </div>
+
+          <!-- 2D Photographic Style Pad -->
+          <div class="section-block" id="video-style-pad-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text">2D Tone & Warmth Pad</span>
+            </div>
+            <div id="vid-style-pad-touch" class="style-pad-area" style="position:relative; width:100%; height:130px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-recessed); overflow:hidden; cursor:crosshair;">
+              <div id="vid-style-pad-dots" style="position:absolute; inset:0;"></div>
+              <div id="vid-style-pad-glow" style="position:absolute; width:40px; height:40px; border-radius:50%; background:var(--accent-primary); filter:blur(15px); opacity:0.4; pointer-events:none; transform:translate(-50%,-50%);"></div>
+              <div id="vid-style-pad-puck" style="position:absolute; width:16px; height:16px; border-radius:50%; background:var(--accent-primary); border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.5); pointer-events:none; transform:translate(-50%,-50%); top:50%; left:50%;"></div>
+            </div>
+          </div>
+
+          <!-- Cinematic LUTs -->
+          <div class="section-block" id="video-lut-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text">Cinematic 3D LUT</span>
+            </div>
+            <div id="vid-lut-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;"></div>
+          </div>
+
+          <!-- Video Resize & Resolution -->
+          <div class="section-block" id="video-resize-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text">Export Scale</span>
+            </div>
+            <div class="segmented-control" style="display:flex; gap:6px;">
+              <button class="segmented-btn active" id="vid-scale-1x">1.0x (1080p)</button>
+              <button class="segmented-btn" id="vid-scale-15x">1.5x (2K)</button>
+              <button class="segmented-btn" id="vid-scale-2x">2.0x (4K)</button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <button class="btn-sk btn-primary-sk" id="video-export-btn" style="width:100%;">
+              <i data-lucide="download"></i> Export Graded Video
+            </button>
           </div>
 
           <!-- Sidebar Footer -->
@@ -1035,7 +1125,13 @@
             <div class="panel-title-sk">
               <i data-lucide="image"></i> Source Image
             </div>
-            <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="btn-sk btn-secondary-sk btn-xs-compact" id="image-undo-btn" title="Undo (Ctrl+Z)" disabled>
+                <i data-lucide="undo-2" style="width:14px; height:14px;"></i> Undo
+              </button>
+              <button class="btn-sk btn-secondary-sk btn-xs-compact" id="image-redo-btn" title="Redo (Ctrl+Y)" disabled>
+                <i data-lucide="redo-2" style="width:14px; height:14px;"></i> Redo
+              </button>
               <input type="file" accept="image/*" id="file-input-element" class="hidden">
               <label for="file-input-element" class="btn-sk btn-secondary-sk" style="padding: 6px 12px; font-size: 0.75rem;">
                 <i data-lucide="upload-cloud"></i>
@@ -1044,7 +1140,7 @@
             </div>
           </div>
           
-          <div class="panel-body-sk" id="source-panel-body">
+          <div class="panel-body-sk checkerboard-bg" id="source-panel-body">
             <div class="upload-placeholder-box" id="upload-placeholder">
               <div class="upload-icon-circle">
                 <i data-lucide="image" style="width: 28px; height: 28px; color: var(--color-muted-teal);"></i>
@@ -1130,14 +1226,14 @@
 
       <!-- ================= VIDEO WORKSPACE ================= -->
       <div id="workspace-video-layout" class="workspace-layout hidden">
-        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:var(--bg-recessed);">
-          <div style="text-align:center; padding:60px 40px; max-width:480px;">
+        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:var(--bg-recessed); padding:20px; position:relative; overflow:hidden;">
+          <video id="video-player-el" controls autoplay loop class="hidden" style="max-width:100%; max-height:100%; border-radius:var(--radius-md); box-shadow:0 10px 30px rgba(0,0,0,0.5);"></video>
+          <div id="video-empty-state" class="hidden" style="text-align:center; padding:60px 40px; max-width:480px;">
             <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, var(--color-stormy-teal))); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
               <i data-lucide="film" style="width:36px; height:36px; color:#fff;"></i>
             </div>
             <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:12px; letter-spacing:-0.02em;">Video Studio</h2>
-            <p style="font-size:1rem; font-weight:600; color:var(--accent-primary); margin-bottom:8px;">Coming Soon</p>
-            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">The Video Color Grading Studio is currently under development. Full support for cinematic LUTs, color correction, and high-bitrate export is on the way.</p>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">Upload a video or click "Load Interactive Sample" to test color grading tools in real-time.</p>
           </div>
         </div>
       </div>
@@ -1218,7 +1314,14 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99999;"></div>
 
-  <script src="https://unpkg.com/mp4-muxer/build/mp4-muxer.js"></script>
+  <script>
+    (function() {
+      var s = document.createElement('script');
+      s.src = 'https://unpkg.com/mp4-muxer/build/mp4-muxer.js';
+      s.onerror = function() { console.warn('mp4-muxer CDN failed to load; webm fallback active.'); };
+      document.head.appendChild(s);
+    })();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>

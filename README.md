@@ -10,13 +10,9 @@ My friend **[Ahmad2012k](https://github.com/Ahmad2012k)** provided the creative 
 - **Creative Assistance:** [Ahmad2012k](https://github.com/Ahmad2012k)
 
 ## Features
-- **High-Performance Node.js Infrastructure:** Runs on a dedicated, lightning-fast Node.js HTTP server (`server.js`) with gzip asset compression, HTTP caching, and instant startup (`npm start`).
+- **100% Pure Static GitHub Pages Architecture:** Runs directly in any modern browser or hosted statically on GitHub Pages with `index.html` at root, zero Node.js server dependencies, zero build steps, instant loading, asset caching, and crisp cross-platform responsiveness.
 - **60 FPS Hardware-Accelerated Performance:** 0.6x downsampled canvas buffer resolution with GPU bilinear scaling and CSS filter offloading (`filter: blur(...)`) on GPU compositor threads for 0 CPU overhead and buttery 60FPS rendering across all engines.
-- **7 Dynamic Animated Gradient Engines & Real-Time Color Sync:**
-  - Real-time bidirectional color sync between timeline keyframes, custom color pickers, and all 7 animated engines (Lava Lamp, Radial Wave, Plasma Pulse, Radial Ripple, Mesh Drift, Aurora, Conic Vortex).
-  - **Lava Lamp Liquid:** Multi-color 3D liquid metaballs with soft radial falloff, bright specular highlights, ambient caustic background halos, and customization controls for viscosity, wax blur, and blob counts.
-  - **Radial Wave (Keyframed):** Multi-center radial keyframe flow engine with position (`posX`, `posY`) and angle interpolation, continuous radial gradient wave pulsing, and keyframe scrubber pins.
-  - **Plasma Pulse, Radial Ripple, Mesh Drift, Aurora Borealis & Conic Vortex.**
+- **7 Dynamic Animated Gradient & Real-Time Color Sync:**
 - **DaVinci Resolve Fusion Animated Gradient Timeline Suite:** Professional timeline video editing suite positioned below the live preview viewport (`#media-timeline-container`), featuring rounded play/pause and keyframe navigation controls matching claymorphic media aesthetics, **Interactive Timeline Scrubber Diamond Pins** (`.timeline-marker-diamond`) rendering at exact timestamp percentages with theme primary accent glowing borders, **+ Keyframe Button** (`#add-keyframe-current-btn`), **Keyframe Cards** with compass direction dials and per-keyframe color swatches, **DaVinci Fusion Effects Sidebar Panel** with Fast Noise Displacement (`#animated-displacement-slider`) and Gaussian Blur Softness (`#animated-blur-slider`) controls, real-time 60FPS Texture Noise canvas overlay, and **DaVinci Resolve Fusion Math Engine** (`interpolateKeyframeAtTime`) interpolating keyframe colors with smooth cosine easing, procedural noise displacement warping, seed rate evolution, and blur diffusion at 60FPS.
 - **Bitrate Synchronization & Animated Resolution Export Dropdown:** 1:1 real-time synchronization between Video & Export Defaults in Settings (`state.defaultExportBitrate`) and the Animated Gradient Export Menu (`#gradient-export-menu`), displaying target export bitrates (e.g. `1080p Full HD (40 Mbps)`, `4K Ultra HD (40 Mbps)`) dynamically.
 - **Cancel Export Progress Modal & Universal ESC Dismissal:** Snappy export progress modal featuring a prominent **Cancel Export** button to safely interrupt active WebCodecs / MediaRecorder export loops without reloading the page, along with universal `Escape` key handling across all modals.
@@ -31,7 +27,7 @@ My friend **[Ahmad2012k](https://github.com/Ahmad2012k)** provided the creative 
 - **RSA Engineering Terms & Conditions & Footer:** Includes `© 2026 RSA Engineering. All rights reserved.` and `Terms & Conditions` links on all sidebar tabs (`Image`, `Gradient`, `Video`) with a modal displaying legal license terms.
 - **21 Aesthetic Skeuomorphic, Claymorphic & Glassmorphic Themes:**
   - **Standard Modern Themes:** Seaweed Default, Golden Sand (Light Luxe), Fire & Ice, Aqua Blossom, Oxidized Earth, Dusty Slate, Midnight Purple, Sakura, Neon Noir, Ocean Depths, Vampire Velvet, Mystic Steel, Jungle Celadon, Neon Forest, Retro Pop, Nord, Solarized Dark, Synthwave.
-  - **Special & Retro Aesthetics (Locked & Blurred):** Frutiger Aero, Terminal, and Windows XP cards blurred out with lock badges indicating *"Special Themes Coming Soon"*.
+  - **Special & Retro Aesthetics (Unlocked):** Frutiger Aero (translucent glass + wallpaper), Original Xbox (OG 2001 dashboard with Xbox jewel orb wallpaper, cyber-green HUD panels, jewel sphere slider thumbs, and neon green glow effects), and Windows XP Luna (classic desktop chrome).
 - **Uniform Tab Navigation Vector Icon Sizing:** All header tab pill buttons (`Image`, `Gradient`, `Video`) use 16px × 16px vector Lucide icons with uniform line weights, text alignment, and colors across all themes.
 
 ## Tech Stack

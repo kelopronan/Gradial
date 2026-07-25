@@ -803,8 +803,7 @@
         '<div style="overflow:hidden;">' +
           '<div class="lut-card-title">' + lut.title + '</div>' +
           '<div class="lut-card-sub">' + lut.sub + '</div>' +
-        '</div>' +
-        '<div class="lut-active-badge"></div>';
+        '</div>';
 
       card.addEventListener('click', function() {
         audioManager.play('pop');
@@ -1172,7 +1171,7 @@
       img.onload = function () {
         state.imageObj = img;
         state.imageSrc = event.target.result;
-        state.targetColorPicked = false; // Don't auto-erase on upload
+        state.targetColorPicked = true; // Automatically key out target color background
 
         // Sample top-left pixel for reference hex readout
         var sampleCanvas = document.createElement('canvas');
@@ -1209,7 +1208,10 @@
         if ($('upload-label-text')) $('upload-label-text').textContent = 'Change Image';
 
         updateColorDisplay();
-        updatePreviewFromEditorCanvas();
+        processColorEraser();
+        state.undoStack = [];
+        state.redoStack = [];
+        pushUndoState();
         hide($('processing-spinner'));
       };
       img.src = event.target.result;
@@ -1295,6 +1297,7 @@
   function handleCanvasMouseUp() {
     if (state.isBrushing) {
       state.isBrushing = false;
+      pushUndoState();
       updatePreviewFromEditorCanvas();
     }
   }
@@ -1386,15 +1389,21 @@
 
   function buildImageFilterCss(scale) {
     scale = scale || 1;
-    var f = state.imageFilters;
-    return 'brightness(' + f.brightness + '%) ' +
-           'contrast(' + f.contrast + '%) ' +
-           'saturate(' + f.saturate + '%) ' +
-           'hue-rotate(' + (f.hue || 0) + 'deg) ' +
-           'grayscale(' + (f.grayscale || 0) + '%) ' +
-           'sepia(' + (f.sepia || 0) + '%) ' +
-           'invert(' + (f.invert || 0) + '%) ' +
-           'blur(' + (f.blur * scale) + 'px)';
+    var f = state.imageFilters || { brightness: 100, contrast: 100, saturate: 100, hue: 0, grayscale: 0, sepia: 0, invert: 0, blur: 0 };
+    if (f.brightness === 100 && f.contrast === 100 && f.saturate === 100 &&
+        (!f.hue) && (!f.grayscale) && (!f.sepia) && (!f.invert) && (!f.blur)) {
+      return 'none';
+    }
+    var parts = [];
+    if (f.brightness !== 100) parts.push('brightness(' + f.brightness + '%)');
+    if (f.contrast !== 100) parts.push('contrast(' + f.contrast + '%)');
+    if (f.saturate !== 100) parts.push('saturate(' + f.saturate + '%)');
+    if (f.hue) parts.push('hue-rotate(' + f.hue + 'deg)');
+    if (f.grayscale) parts.push('grayscale(' + f.grayscale + '%)');
+    if (f.sepia) parts.push('sepia(' + f.sepia + '%)');
+    if (f.invert) parts.push('invert(' + f.invert + '%)');
+    if (f.blur) parts.push('blur(' + (f.blur * scale) + 'px)');
+    return parts.length > 0 ? parts.join(' ') : 'none';
   }
 
   function updatePreviewFromEditorCanvas() {
@@ -1414,9 +1423,12 @@
     tmp.width = previewW;
     tmp.height = previewH;
     var tctx = tmp.getContext('2d');
+    tctx.clearRect(0, 0, previewW, previewH);
     tctx.imageSmoothingEnabled = true;
     tctx.imageSmoothingQuality = 'high';
-    tctx.filter = buildImageFilterCss(1);
+    
+    var filterCss = buildImageFilterCss(1);
+    tctx.filter = filterCss;
     tctx.drawImage(editorCanvas, 0, 0, previewW, previewH);
 
     // Apply LUT & 2D Style Pad to lightweight preview image data (0 lag)
@@ -1426,7 +1438,7 @@
       tctx.putImageData(imgData, 0, 0);
     }
 
-    var url = tmp.toDataURL('image/jpeg', 0.88);
+    var url = tmp.toDataURL('image/png');
     var prevImg = $('preview-result-img');
     if (prevImg) {
       prevImg.src = url;
@@ -1457,26 +1469,35 @@
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // If Alpha Channel Transparency is DISABLED, fill background with solid white (#FFFFFF)
-      if (!state.defaultExportAlpha) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-
-      // Apply CSS Filters to the canvas context so they are baked into the PNG
-      ctx.filter = buildImageFilterCss(state.exportScale);
-
+      // 1. Apply CSS Filters to the canvas context (matches preview scaling)
+      ctx.filter = buildImageFilterCss(1);
       ctx.drawImage(editorCanvas, 0, 0, canvas.width, canvas.height);
       ctx.filter = 'none'; // reset
 
-      // Apply LUT & 2D Style Pad to export canvas image data
+      // 2. Apply LUT & 2D Style Pad to transparent image data BEFORE solid background fill,
+      // so erased/transparent background pixels are skipped, matching live preview 100%
       if ((state.imgLut && state.imgLut !== 'none') || state.imgStylePad.tone !== 0 || state.imgStylePad.warmth !== 0) {
         var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         applyLutAndStylePadToImageData(imgData, state.imgLut, state.imgLutStrength, state.imgStylePad.tone, state.imgStylePad.warmth);
         ctx.putImageData(imgData, 0, 0);
+      }
+
+      // 3. If Alpha Channel Transparency is DISABLED, composite solid white (#FFFFFF) background BEHIND processed image
+      if (!state.defaultExportAlpha) {
+        var bgCanvas = document.createElement('canvas');
+        bgCanvas.width = canvas.width;
+        bgCanvas.height = canvas.height;
+        var bgCtx = bgCanvas.getContext('2d');
+        bgCtx.fillStyle = '#FFFFFF';
+        bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+        bgCtx.drawImage(canvas, 0, 0);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(bgCanvas, 0, 0);
       }
 
       try {
@@ -1535,55 +1556,106 @@
     var block = $('image-export-block');
     if (!block) return;
 
-    if (state.imageObj) {
-      block.innerHTML =
-        '<div class="status-pill"><i data-lucide="check-circle"></i> Ready to export</div>' +
-        '<div style="height: 10px;"></div>' +
-        '<div style="position: relative;" id="image-export-anchor-sk">' +
-          '<div style="display: flex; gap: 8px;">' +
-            '<button class="btn-sk btn-primary-sk" id="image-export-main-btn" style="flex: 1;">' +
-              '<i data-lucide="download"></i> <span>Export PNG</span>' +
-            '</button>' +
-            '<button class="btn-sk btn-icon-sk" id="image-export-scale-btn">' +
-              '<i data-lucide="settings"></i>' +
-            '</button>' +
-          '</div>' +
-          '<div class="dropdown-menu-sk hidden" id="image-export-menu-sk">' +
-            '<div class="dropdown-header-sk">Resolution Scale</div>' +
-            '<div style="padding: 4px;">' +
-              [0.5, 1, 2, 4].map(function (scale) {
-                var isSelected = state.exportScale === scale;
-                return '<button class="dropdown-item-sk' + (isSelected ? ' selected' : '') + '" data-scale="' + scale + '">' +
-                  '<span>' + scale + 'x' + (scale === 1 ? ' (Original)' : '') + '</span>' +
-                  (isSelected ? '<i data-lucide="check" style="width: 14px; height: 14px; color: var(--accent-primary);"></i>' : '') +
-                '</button>';
-              }).join('') +
-            '</div>' +
+    var resolutions = [
+      { label: 'Full HD (1080p)', scale: 1, width: 1920, height: 1080 },
+      { label: '2K QHD (1440p)', scale: 2, width: 2560, height: 1440 },
+      { label: '4K Ultra HD', scale: 4, width: 3840, height: 2160 },
+      { label: '8K Ultra HD', scale: 8, width: 7680, height: 4320 },
+      { label: 'Mobile Portrait (9:16)', scale: 2, width: 1080, height: 1920 },
+      { label: 'Square Post (1:1)', scale: 2, width: 1080, height: 1080 }
+    ];
+
+    if (!state.selectedImageResolution) {
+      state.selectedImageResolution = resolutions[1]; // Default 2K QHD (1440p)
+      state.exportScale = resolutions[1].scale;
+    }
+
+    var isMenuOpen = !!state.isImageExportMenuOpen;
+
+    var resListHtml = resolutions.map(function (res) {
+      var isSelected = state.selectedImageResolution && state.selectedImageResolution.label === res.label;
+      var checkIcon = isSelected ? '<i data-lucide="check" style="width:14px; height:14px; color:var(--accent-primary);"></i> ' : '';
+      return '<button class="dropdown-item-sk' + (isSelected ? ' selected' : '') + '" type="button" data-res-label="' + res.label + '" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: none; background: ' + (isSelected ? 'var(--bg-recessed)' : 'transparent') + '; color: var(--text-main); font-weight: 700; font-size: 0.84rem; cursor: pointer; border-radius: 8px; transition: background 0.15s ease; white-space: nowrap; gap: 12px;">' +
+        '<div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden;">' +
+          checkIcon +
+          '<span style="font-weight:700;">' + res.label + '</span>' +
+        '</div>' +
+        '<span style="font-family:var(--font-mono); font-size:0.75rem; opacity:0.75; white-space:nowrap; flex-shrink:0;">' + res.width + ' × ' + res.height + '</span>' +
+      '</button>';
+    }).join('');
+
+    block.innerHTML =
+      '<div style="position: relative;" id="image-export-dropdown-anchor">' +
+        '<div style="display: flex; gap: 8px;">' +
+          '<button class="btn-sk btn-primary-sk" id="image-export-main-btn" style="flex: 1; min-width: 0;">' +
+            '<i data-lucide="download"></i>' +
+            '<span>Export PNG</span>' +
+          '</button>' +
+          '<button class="btn-sk btn-icon-sk" id="image-export-chevron-btn" title="Select Resolution" style="flex-shrink: 0; width: 42px; padding: 0; display: flex; align-items: center; justify-content: center;">' +
+            '<i data-lucide="' + (isMenuOpen ? 'chevron-up' : 'chevron-down') + '"></i>' +
+          '</button>' +
+        '</div>' +
+        '<div class="dropdown-menu-sk' + (isMenuOpen ? '' : ' hidden') + '" id="image-export-menu-sk" style="position: absolute; bottom: 100%; left: 0; right: 0; margin-bottom: 8px; width: 100%; box-sizing: border-box; z-index: 999; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); padding: 6px; display: ' + (isMenuOpen ? 'block' : 'none') + ';">' +
+          '<div class="dropdown-header-sk" style="font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); padding: 8px 12px 6px;">RESOLUTIONS</div>' +
+          '<div id="image-resolutions-list" style="display: flex; flex-direction: column; gap: 2px;">' +
+            resListHtml +
           '</div>' +
         '</div>' +
+      '</div>' +
+      (state.imageObj ? 
         '<div style="height: 8px;"></div>' +
-        '<button class="btn-sk btn-danger-sk" id="image-clear-all-btn">' +
+        '<button class="btn-sk btn-danger-sk" id="image-clear-all-btn" style="width: 100%; height: 32px; font-size: 0.78rem;">' +
           '<i data-lucide="rotate-ccw"></i> Clear Image' +
-        '</button>';
+        '</button>' : ''
+      );
 
-      if (window.lucide) lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
 
-      document.getElementById('image-export-main-btn').addEventListener('click', handleImageExport);
-      document.getElementById('image-export-scale-btn').addEventListener('click', function (e) {
+    // Toggle chevron menu
+    var chevBtn = $('image-export-chevron-btn');
+    if (chevBtn) {
+      chevBtn.addEventListener('click', function (e) {
         e.stopPropagation();
+        audioManager.play('pop');
         state.isImageExportMenuOpen = !state.isImageExportMenuOpen;
-        toggle(document.getElementById('image-export-menu-sk'), state.isImageExportMenuOpen);
+        renderImageExportBlock();
       });
-      document.querySelectorAll('#image-export-menu-sk .dropdown-item-sk').forEach(function (item) {
-        item.addEventListener('click', function () {
-          state.exportScale = Number(item.dataset.scale);
-          state.isImageExportMenuOpen = false;
-          renderImageExportBlock();
-        });
+    }
+
+    // Bind resolution options
+    block.querySelectorAll('#image-resolutions-list .dropdown-item-sk').forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        e.stopPropagation();
+        audioManager.play('pop');
+        var label = item.dataset.resLabel;
+        var found = resolutions.find(function (r) { return r.label === label; });
+        if (found) {
+          state.selectedImageResolution = found;
+          state.exportScale = found.scale;
+        }
+        state.isImageExportMenuOpen = false;
+        renderImageExportBlock();
       });
-      document.getElementById('image-clear-all-btn').addEventListener('click', handleClearAllImage);
-    } else {
-      block.innerHTML = '<div class="status-pill" style="opacity: 0.7;">Upload an image to edit</div>';
+    });
+
+    // Main Export button handler
+    var exportBtn = $('image-export-main-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function () {
+        if (state.imageObj) {
+          handleImageExport();
+        } else {
+          audioManager.play('pop');
+          var fileInp = $('file-input-element');
+          if (fileInp) fileInp.click();
+        }
+      });
+    }
+
+    // Clear Image button
+    var clearBtn = $('image-clear-all-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', handleClearAllImage);
     }
   }
 
@@ -1687,34 +1759,56 @@
       });
     });
   }
-      function renderGradientResolutions() {
+  function renderGradientResolutions() {
     var list = $('gradient-resolutions-list');
     if (!list) return;
     list.innerHTML = '';
     var currentMbps = Math.round((state.defaultExportBitrate || 40000000) / 1000000) + ' Mbps';
     var isAnimatedMode = (state.gradientMode === 'animated' || state.gradientMode === 'aurora' || state.gradientMode === 'lavalamp');
 
+    var savedResJson = localStorage.getItem('gradial_selected_export_resolution');
+    if (savedResJson && !state.selectedExportResolution) {
+      try { state.selectedExportResolution = JSON.parse(savedResJson); } catch (e) {}
+    }
+    if (!state.selectedExportResolution && typeof GRADIENT_RESOLUTIONS !== 'undefined') {
+      state.selectedExportResolution = GRADIENT_RESOLUTIONS[0];
+    }
+
     GRADIENT_RESOLUTIONS.forEach(function (res) {
       var btn = document.createElement('button');
       btn.className = 'dropdown-item-sk';
       btn.type = 'button';
-      btn.style.cssText = 'width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border: none; background: transparent; color: var(--text-main); font-weight: 700; font-size: 0.84rem; cursor: pointer; border-radius: 8px; transition: background 0.15s ease; white-space: nowrap; gap: 12px;';
+      var isSelected = state.selectedExportResolution && state.selectedExportResolution.label === res.label;
+      btn.style.cssText = 'width: 100%; display: flex; flex-direction: column; padding: 10px 12px; border: none; background: ' + (isSelected ? 'var(--bg-recessed)' : 'transparent') + '; color: var(--text-main); font-weight: 700; cursor: pointer; border-radius: 8px; transition: background 0.15s ease; gap: 4px; box-sizing: border-box; text-align: left;';
       
-      var bitrateBadge = isAnimatedMode ? '<span class="res-bitrate-badge" style="font-family: var(--font-main); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.02em; padding: 2px 8px; border-radius: 999px; background: var(--bg-recessed); color: var(--accent-primary); border: 1px solid var(--border-color); display: inline-flex; align-items: center;">' + currentMbps + '</span>' : '';
-      
+      var bitrateBadge = isAnimatedMode ? '<span class="res-bitrate-badge" style="font-family: var(--font-main); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em; padding: 2px 8px; border-radius: 999px; background: rgba(0, 213, 255, 0.16); color: var(--accent-primary); border: 1px solid var(--border-color); flex-shrink: 0; display: inline-flex; align-items: center; white-space: nowrap;">' + currentMbps + '</span>' : '';
+      var checkIcon = isSelected ? '<i data-lucide="check" style="width:14px; height:14px; color:var(--accent-primary); flex-shrink:0;"></i>' : '<span style="width:14px; flex-shrink:0;"></span>';
+
       btn.innerHTML =
-        '<div style="display:flex; align-items:center; gap:8px; white-space:nowrap; overflow:hidden;">' +
-          '<span style="font-weight:700;">' + res.label + '</span>' +
+        '<div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 8px;">' +
+          '<div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">' +
+            checkIcon +
+            '<span style="font-weight: 800; font-size: 0.86rem; color: var(--text-main); white-space: nowrap;">' + res.label + '</span>' +
+          '</div>' +
           bitrateBadge +
         '</div>' +
-        '<span style="font-family:var(--font-mono); font-size:0.75rem; opacity:0.75; white-space:nowrap; flex-shrink:0;">' + res.width + ' × ' + res.height + '</span>';
+        '<div style="display: flex; align-items: center; justify-content: flex-start; width: 100%; padding-left: 22px;">' +
+          '<span style="font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.8; color: var(--text-sub); font-weight: 600;">' + res.width + ' × ' + res.height + '</span>' +
+        '</div>';
 
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
-        handleExportGradient(res);
+        audioManager.play('pop');
+        state.selectedExportResolution = res;
+        localStorage.setItem('gradial_selected_export_resolution', JSON.stringify(res));
+        state.isGradientExportMenuOpen = false;
+        var menu = $('gradient-export-menu');
+        if (menu) hide(menu);
+        updateGradientSections();
       });
       list.appendChild(btn);
     });
+    if (window.lucide) lucide.createIcons();
   }
 
   function updateGradientSections() {
@@ -1747,7 +1841,7 @@
     if (exportBtn) {
       var isVideoMode = (mode === 'animated');
       var icon = isVideoMode ? 'video' : 'download';
-      var label = isVideoMode ? 'Export Video (MP4)' : 'Export FHD';
+      var label = isVideoMode ? 'Export Video (MP4)' : 'Export PNG';
       exportBtn.innerHTML = '<i data-lucide="' + icon + '"></i><span>' + label + '</span>';
       if (window.lucide) lucide.createIcons();
     }
@@ -1966,34 +2060,28 @@
 
       card.innerHTML =
         '<div style="display: flex; align-items: center; justify-content: space-between;">' +
-          '<div style="display: flex; align-items: center; gap: 6px;">' +
-            '<span class="corner-card-label" style="font-weight: 700; font-size: 0.78rem; color: var(--accent-primary);">Point #' + (idx + 1) + '</span>' +
-            '<span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted);">(' + Math.round(pt.x * 100) + '%, ' + Math.round(pt.y * 100) + '%)</span>' +
-          '</div>' +
+          '<span class="corner-card-label" style="font-weight: 700; font-size: 0.78rem; color: var(--accent-primary);">Point #' + (idx + 1) + '</span>' +
           '<button class="positional-point-remove-btn btn-sk btn-icon-sk" data-pidx="' + idx + '"' + ((state.positionalPoints.length <= 2) ? ' disabled' : '') + ' style="width: 22px; height: 22px; padding: 0;">' +
             '<i data-lucide="x" style="width:12px; height:12px;"></i>' +
           '</button>' +
         '</div>' +
         '<div style="display: flex; align-items: center; gap: 8px;">' +
-          '<div class="color-picker-wrap custom-cp-trigger" data-pidx="' + idx + '" style="width: 28px; height: 28px; cursor: pointer;">' +
+          '<div class="color-picker-wrap custom-cp-trigger" data-pidx="' + idx + '" style="width: 28px; height: 28px; cursor: pointer; flex-shrink:0;">' +
             '<div class="color-picker-swatch" style="background-color: ' + pt.color + '; pointer-events: none;"></div>' +
           '</div>' +
           '<input type="text" class="text-input-sk positional-hex-input" value="' + pt.color.toUpperCase() + '" data-pidx="' + idx + '" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;">' +
         '</div>' +
-        '<div class="quick-palette-row">' +
-          quickDotsHtml +
-        '</div>' +
         '<div style="display: flex; flex-direction: column; gap: 4px;">' +
-          '<div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-sub);">' +
+          '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 600; color: var(--text-sub);">' +
             '<span>Intensity</span>' +
-            '<span class="positional-intensity-badge" style="font-family: var(--font-mono); font-weight: 700; color: var(--color-seaweed);">' + (pt.intensity || 85) + '%</span>' +
+            '<span class="positional-intensity-badge" style="font-family: var(--font-mono); color: var(--accent-primary);">' + (pt.intensity || 85) + '%</span>' +
           '</div>' +
           '<input type="range" class="positional-intensity-slider sk-slider" min="20" max="150" value="' + (pt.intensity || 85) + '" data-pidx="' + idx + '">' +
         '</div>' +
         '<div style="display: flex; flex-direction: column; gap: 4px;">' +
-          '<div style="display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-sub);">' +
-            '<span>Spread Radius</span>' +
-            '<span class="positional-radius-badge" style="font-family: var(--font-mono); font-weight: 700; color: var(--color-seaweed);">' + Math.round((pt.radius || 0.7) * 100) + '%</span>' +
+          '<div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 600; color: var(--text-sub);">' +
+            '<span>Radius</span>' +
+            '<span class="positional-radius-badge" style="font-family: var(--font-mono); color: var(--accent-primary);">' + Math.round((pt.radius || 0.7) * 100) + '%</span>' +
           '</div>' +
           '<input type="range" class="positional-radius-slider sk-slider" min="10" max="150" value="' + Math.round((pt.radius || 0.7) * 100) + '" data-pidx="' + idx + '">' +
         '</div>';
@@ -2093,7 +2181,95 @@
     overlay.innerHTML = '';
 
     var mode = state.gradientMode;
-    if (mode !== '4-corner' && mode !== '6-corner' && mode !== 'fluid' && mode !== 'positional') return;
+    if (mode !== 'linear' && mode !== '4-corner' && mode !== '6-corner' && mode !== 'fluid' && mode !== 'positional') return;
+
+    if (mode === 'linear') {
+      var angle = state.gradientAngle || 90;
+      var rad = (angle - 90) * (Math.PI / 180);
+      var midPct = state.gradientMidpoint !== undefined ? state.gradientMidpoint : 50;
+
+      // Draw SVG overlay line
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('style', 'position:absolute; inset:0; width:100%; height:100%; pointer-events:none;');
+      var cxPct = 50, cyPct = 50;
+      var lenPct = 35; // 35% radius
+      var startXPct = cxPct - Math.cos(rad) * lenPct;
+      var startYPct = cyPct - Math.sin(rad) * lenPct;
+      var endXPct = cxPct + Math.cos(rad) * lenPct;
+      var endYPct = cyPct + Math.sin(rad) * lenPct;
+
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', startXPct + '%');
+      line.setAttribute('y1', startYPct + '%');
+      line.setAttribute('x2', endXPct + '%');
+      line.setAttribute('y2', endYPct + '%');
+      line.setAttribute('stroke', 'var(--accent-primary, #49A078)');
+      line.setAttribute('stroke-width', '2');
+      line.setAttribute('stroke-dasharray', '4 4');
+      svg.appendChild(line);
+      overlay.appendChild(svg);
+
+      // Midpoint Handle
+      var midXPct = startXPct + (endXPct - startXPct) * (midPct / 100);
+      var midYPct = startYPct + (endYPct - startYPct) * (midPct / 100);
+
+      var midHandle = document.createElement('div');
+      midHandle.className = 'canvas-point-handle linear-midpoint-handle';
+      midHandle.style.left = midXPct + '%';
+      midHandle.style.top = midYPct + '%';
+      midHandle.style.backgroundColor = 'var(--accent-primary, #49A078)';
+      midHandle.style.border = '2px solid #ffffff';
+      midHandle.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+      midHandle.innerHTML = '<span class="canvas-point-handle-label">Mid: ' + Math.round(midPct) + '%</span>';
+
+      var isMidDragging = false;
+      midHandle.addEventListener('pointerdown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        isMidDragging = true;
+        midHandle.setPointerCapture(e.pointerId);
+      });
+      midHandle.addEventListener('pointermove', function(e) {
+        if (!isMidDragging) return;
+        var rect = overlay.getBoundingClientRect();
+        var clickX = e.clientX - rect.left;
+        var clickY = e.clientY - rect.top;
+        var startX = (startXPct / 100) * rect.width;
+        var startY = (startYPct / 100) * rect.height;
+        var endX = (endXPct / 100) * rect.width;
+        var endY = (endYPct / 100) * rect.height;
+
+        var dx = endX - startX;
+        var dy = endY - startY;
+        var lenSq = dx * dx + dy * dy;
+        if (lenSq === 0) return;
+
+        var t = ((clickX - startX) * dx + (clickY - startY) * dy) / lenSq;
+        t = Math.max(0.05, Math.min(0.95, t));
+        var newMid = Math.round(t * 100);
+        state.gradientMidpoint = newMid;
+
+        var currMidXPct = startXPct + (endXPct - startXPct) * (newMid / 100);
+        var currMidYPct = startYPct + (endYPct - startYPct) * (newMid / 100);
+        midHandle.style.left = currMidXPct + '%';
+        midHandle.style.top = currMidYPct + '%';
+
+        var labelSpan = midHandle.querySelector('.canvas-point-handle-label');
+        if (labelSpan) labelSpan.textContent = 'Mid: ' + newMid + '%';
+
+        if ($('gradient-midpoint-slider')) $('gradient-midpoint-slider').value = newMid;
+        if ($('gradient-midpoint-val')) $('gradient-midpoint-val').textContent = newMid + '%';
+
+        updateGradientPreview();
+        updateCssOutput();
+      });
+      midHandle.addEventListener('pointerup', function(e) {
+        isMidDragging = false;
+        try { midHandle.releasePointerCapture(e.pointerId); } catch(err) {}
+      });
+      overlay.appendChild(midHandle);
+      return;
+    }
 
     var handlesData = [];
 
@@ -2817,7 +2993,25 @@
     _updateGradientPreview();
   }
 
-    function _updateGradientPreview() {
+  function buildLinearGradientCss() {
+    var angle = state.gradientAngle || 90;
+    var cols = state.gradientColors || ['#FF6B6B', '#49A078'];
+    var mid = state.gradientMidpoint !== undefined ? state.gradientMidpoint : 50;
+
+    if (cols.length === 2) {
+      return 'linear-gradient(' + angle + 'deg, ' + cols[0] + ', ' + mid + '%, ' + cols[1] + ')';
+    } else {
+      var colorStops = [];
+      for (var i = 0; i < cols.length; i++) {
+        if (i === 0) colorStops.push(cols[i] + ' 0%');
+        else if (i === cols.length - 1) colorStops.push(cols[i] + ' 100%');
+        else colorStops.push(cols[i] + ' ' + mid + '%');
+      }
+      return 'linear-gradient(' + angle + 'deg, ' + colorStops.join(', ') + ')';
+    }
+  }
+
+  function _updateGradientPreview() {
     var preview = $('gradient-live-viewport');
     if (!preview) return;
     var mode = state.gradientMode;
@@ -2837,7 +3031,7 @@
     preview.style.animation = '';
 
     if (mode === 'linear') {
-      var css = 'linear-gradient(' + state.gradientAngle + 'deg, ' + state.gradientColors.join(', ') + ')';
+      var css = buildLinearGradientCss();
       preview.style.background = '';
       preview.style.backgroundColor = '';
       preview.style.backgroundImage = state.enableNoise ? noiseUrl + ', ' + css : css;
@@ -2963,7 +3157,7 @@
     var noiseUrl = state.enableNoise ? "url('" + noiseDataUri + "')" : '';
 
     if (mode === 'linear') {
-      var css = 'linear-gradient(' + state.gradientAngle + 'deg, ' + state.gradientColors.join(', ') + ')';
+      var css = buildLinearGradientCss();
       output = '/* Linear Gradient */\nbackground-image: ' + (state.enableNoise ? noiseUrl + ', ' + css : css) + ';';
 
     } else if (mode === 'positional') {
@@ -3109,7 +3303,9 @@
             var btnSpan = $('gradient-export-main-btn').querySelector('span');
             if (btnSpan) {
               btnSpan.textContent = 'Exported!';
-              setTimeout(function () { btnSpan.textContent = 'Export FHD'; }, 2000);
+              setTimeout(function () {
+                btnSpan.textContent = 'Export PNG';
+              }, 2000);
             }
           }, 'image/png', 1.0);
         } catch (err) {
@@ -3133,8 +3329,11 @@
         var y1 = cy + Math.sin(rad) * halfLength;
 
         var grad = ctx.createLinearGradient(x0, y0, x1, y1);
+        var midRatio = (state.gradientMidpoint !== undefined ? state.gradientMidpoint : 50) / 100;
         state.gradientColors.forEach(function (color, i) {
-          grad.addColorStop(i / Math.max(1, state.gradientColors.length - 1), color);
+          var stopPct = i / Math.max(1, state.gradientColors.length - 1);
+          if (i > 0 && i < state.gradientColors.length - 1) stopPct = midRatio;
+          grad.addColorStop(stopPct, color);
         });
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, width, height);
@@ -3486,6 +3685,9 @@
     if (typeof updateImageControlsState === 'function') {
       updateImageControlsState();
     }
+    if (typeof initVideoTab === 'function') {
+      initVideoTab();
+    }
     updateGradientPreview();
     updateCssOutput();
     initSliderFills();
@@ -3762,6 +3964,7 @@
       $('tolerance-slider').addEventListener('input', function (e) {
         state.tolerance = Number(e.target.value);
         if ($('tolerance-val')) $('tolerance-val').textContent = state.tolerance + '%';
+        state.targetColorPicked = true;
         scheduleProcessing();
       });
     }
@@ -3794,6 +3997,17 @@
     if ($('angle-slider')) {
       $('angle-slider').addEventListener('input', function (e) {
         updateAngle(e.target.value);
+      });
+    }
+
+    if ($('gradient-midpoint-slider')) {
+      $('gradient-midpoint-slider').addEventListener('input', function (e) {
+        var val = Number(e.target.value);
+        state.gradientMidpoint = val;
+        if ($('gradient-midpoint-val')) $('gradient-midpoint-val').textContent = val + '%';
+        renderCanvasHandlesOverlay();
+        updateGradientPreview();
+        updateCssOutput();
       });
     }
 
@@ -3887,21 +4101,85 @@
     // Rotate / Flip
     if ($('image-rotate-btn')) {
       $('image-rotate-btn').addEventListener('click', function () {
-        if (!state.imageObj) return;
+        if (!editorCanvas || !editorCtx || !state.imageObj) return;
+        pushUndoState();
         audioManager.play('pop');
-        var w = editorCanvas.width, h = editorCanvas.height;
+        var w = state.imageObj.width, h = state.imageObj.height;
         var tmp = document.createElement('canvas');
         tmp.width = h; tmp.height = w;
         var tctx = tmp.getContext('2d');
         tctx.translate(h / 2, w / 2);
         tctx.rotate(Math.PI / 2);
-        tctx.drawImage(editorCanvas, -w / 2, -h / 2);
-        editorCanvas.width = h; editorCanvas.height = w;
-        editorCtx.clearRect(0, 0, h, w);
-        editorCtx.drawImage(tmp, 0, 0);
-        updatePreviewFromEditorCanvas();
+        tctx.drawImage(state.imageObj, -w / 2, -h / 2);
+        var dataUrl = tmp.toDataURL('image/png');
+        var newImg = new Image();
+        newImg.onload = function () {
+          state.imageObj = newImg;
+          if (state.origCanvas) {
+            state.origCanvas.width = h; state.origCanvas.height = w;
+            state.origCtx.clearRect(0, 0, h, w);
+            state.origCtx.drawImage(newImg, 0, 0);
+          }
+          scheduleProcessing();
+        };
+        newImg.src = dataUrl;
       });
     }
+
+    if ($('image-flip-h-btn')) {
+      $('image-flip-h-btn').addEventListener('click', function () {
+        if (!editorCanvas || !editorCtx || !state.imageObj) return;
+        pushUndoState();
+        audioManager.play('pop');
+        var w = state.imageObj.width, h = state.imageObj.height;
+        var tmp = document.createElement('canvas');
+        tmp.width = w; tmp.height = h;
+        var tctx = tmp.getContext('2d');
+        tctx.translate(w, 0);
+        tctx.scale(-1, 1);
+        tctx.drawImage(state.imageObj, 0, 0);
+        var dataUrl = tmp.toDataURL('image/png');
+        var newImg = new Image();
+        newImg.onload = function () {
+          state.imageObj = newImg;
+          if (state.origCanvas) {
+            state.origCanvas.width = w; state.origCanvas.height = h;
+            state.origCtx.clearRect(0, 0, w, h);
+            state.origCtx.drawImage(newImg, 0, 0);
+          }
+          scheduleProcessing();
+        };
+        newImg.src = dataUrl;
+      });
+    }
+
+    if ($('image-flip-v-btn')) {
+      $('image-flip-v-btn').addEventListener('click', function () {
+        if (!editorCanvas || !editorCtx || !state.imageObj) return;
+        pushUndoState();
+        audioManager.play('pop');
+        var w = state.imageObj.width, h = state.imageObj.height;
+        var tmp = document.createElement('canvas');
+        tmp.width = w; tmp.height = h;
+        var tctx = tmp.getContext('2d');
+        tctx.translate(0, h);
+        tctx.scale(1, -1);
+        tctx.drawImage(state.imageObj, 0, 0);
+        var dataUrl = tmp.toDataURL('image/png');
+        var newImg = new Image();
+        newImg.onload = function () {
+          state.imageObj = newImg;
+          if (state.origCanvas) {
+            state.origCanvas.width = w; state.origCanvas.height = h;
+            state.origCtx.clearRect(0, 0, w, h);
+            state.origCtx.drawImage(newImg, 0, 0);
+          }
+          scheduleProcessing();
+        };
+        newImg.src = dataUrl;
+      });
+    }
+
     // Photoshop-Style Layers Controls
     if ($('add-layer-btn')) {
       $('add-layer-btn').addEventListener('click', function () {
@@ -3939,28 +4217,34 @@
       }
     });
 
-    // Undo / Redo
-    if ($('img-undo-btn')) {
-      $('img-undo-btn').addEventListener('click', function () {
-        audioManager.play('pop');
-        if (state.undoStack.length > 0) {
-          var snapshot = state.undoStack.pop();
-          state.redoStack.push(editorCanvas.toDataURL('image/png'));
-          restoreUndoState(snapshot);
-        }
-      });
-    }
+    // Undo / Redo Click Listeners
+    ['image-undo-btn', 'img-undo-btn'].forEach(function(id) {
+      var btn = $(id);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          handleUndo();
+        });
+      }
+    });
 
-    if ($('img-redo-btn')) {
-      $('img-redo-btn').addEventListener('click', function () {
-        audioManager.play('pop');
-        if (state.redoStack.length > 0) {
-          var snapshot = state.redoStack.pop();
-          state.undoStack.push(editorCanvas.toDataURL('image/png'));
-          restoreUndoState(snapshot);
-        }
-      });
-    }
+    ['image-redo-btn', 'img-redo-btn'].forEach(function(id) {
+      var btn = $(id);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          handleRedo();
+        });
+      }
+    });
+
+    // Automatically Push Undo Snapshot on Slider Commit (release)
+    ['tolerance-slider', 'smoothing-slider', 'edge-feather-slider', 'filter-blur', 'filter-hue', 'filter-brightness', 'filter-contrast', 'filter-saturate', 'levels-gamma-slider'].forEach(function(id) {
+      var slider = $(id);
+      if (slider) {
+        slider.addEventListener('change', function () {
+          pushUndoState();
+        });
+      }
+    });
 
     // Levels Gamma Slider
     if ($('levels-gamma-slider')) {
@@ -4362,7 +4646,8 @@
     // Gradient Export Controls
     if ($('gradient-export-main-btn')) {
       $('gradient-export-main-btn').addEventListener('click', function () {
-        handleExportGradient(GRADIENT_RESOLUTIONS[2]);
+        var targetRes = state.selectedExportResolution || (typeof GRADIENT_RESOLUTIONS !== 'undefined' ? GRADIENT_RESOLUTIONS[0] : { width: 1920, height: 1080, label: 'FHD' });
+        handleExportGradient(targetRes);
       });
     }
 
@@ -4385,6 +4670,12 @@
         state.isGradientExportMenuOpen = false;
         hide(menu);
       }
+      var imgMenu = $('image-export-menu-sk');
+      var imgAnchor = $('image-export-dropdown-anchor');
+      if (imgAnchor && !imgAnchor.contains(e.target)) {
+        state.isImageExportMenuOpen = false;
+        if (imgMenu) hide(imgMenu);
+      }
     });
 
     // Terms & Conditions Modal
@@ -4395,7 +4686,9 @@
     function closeTermsModal() {
       hide($('terms-modal-overlay'));
     }
-    if ($('open-terms-modal-btn')) $('open-terms-modal-btn').addEventListener('click', openTermsModal);
+    document.querySelectorAll('#open-terms-modal-btn, .open-terms-modal-btn, .terms-link-btn').forEach(function (btn) {
+      btn.addEventListener('click', openTermsModal);
+    });
     if ($('terms-modal-close-btn')) $('terms-modal-close-btn').addEventListener('click', closeTermsModal);
     if ($('terms-modal-accept-btn')) $('terms-modal-accept-btn').addEventListener('click', closeTermsModal);
 
@@ -4421,6 +4714,22 @@
           if (typeof closeCustomColorPicker === 'function') closeCustomColorPicker();
         }
       }
+
+      if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'z') {
+        if (state.activeTab === 'image') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            handleRedo();
+          } else {
+            handleUndo();
+          }
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'y') {
+        if (state.activeTab === 'image') {
+          e.preventDefault();
+          handleRedo();
+        }
+      }
     });
 
     // Initialize Image Tab 2D Style Pad & LUT Presets Grid
@@ -4436,6 +4745,7 @@
         state.imgStylePad.warmth = warmth;
         if (isFinal) {
           if ($('preview-result-img')) $('preview-result-img').style.filter = '';
+          pushUndoState();
           updatePreviewFromEditorCanvas();
         } else {
           var prev = $('preview-result-img');
@@ -4753,132 +5063,159 @@
     requestAnimationFrame(drawFrame);
   }
 
-  function initSampleImageCanvas() {
-    var canvas = document.createElement('canvas');
-    canvas.width = 1200;
-    canvas.height = 800;
-    var ctx = canvas.getContext('2d');
+  function captureCurrentSnapshot() {
+    if (!editorCanvas || editorCanvas.width === 0) return null;
+    return {
+      image: editorCanvas.toDataURL('image/png'),
+      targetColor: state.targetColor ? { r: state.targetColor.r, g: state.targetColor.g, b: state.targetColor.b } : null,
+      targetColorPicked: state.targetColorPicked,
+      tolerance: $('tolerance-slider') ? Number($('tolerance-slider').value) : (state.tolerance || 15),
+      smoothing: $('smoothing-slider') ? Number($('smoothing-slider').value) : (state.smoothing || 2),
+      feather: $('edge-feather-slider') ? Number($('edge-feather-slider').value) : (state.edgeFeather || 28),
+      tone: state.imgStylePad ? state.imgStylePad.tone : 0,
+      warmth: state.imgStylePad ? state.imgStylePad.warmth : 0,
+      lut: state.imgLut || 'none',
+      blur: $('filter-blur') ? Number($('filter-blur').value) : 0,
+      hue: $('filter-hue') ? Number($('filter-hue').value) : 0,
+      brightness: $('filter-brightness') ? Number($('filter-brightness').value) : 100,
+      contrast: $('filter-contrast') ? Number($('filter-contrast').value) : 100,
+      saturate: $('filter-saturate') ? Number($('filter-saturate').value) : 100
+    };
+  }
 
-    // Background gradient
-    var bgGrad = ctx.createLinearGradient(0, 0, 1200, 800);
-    bgGrad.addColorStop(0, '#0f172a');
-    bgGrad.addColorStop(0.4, '#1e1b4b');
-    bgGrad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 1200, 800);
+  function pushUndoState() {
+    var snap = captureCurrentSnapshot();
+    if (!snap) return;
+    if (!state.undoStack) state.undoStack = [];
 
-    // Glowing vibrant shapes & orbs for testing eraser/retouch tools
-    // Orb 1: Cyan/Blue glow
-    var r1 = ctx.createRadialGradient(350, 320, 20, 350, 320, 280);
-    r1.addColorStop(0, '#00f0ff');
-    r1.addColorStop(0.5, '#3b82f6');
-    r1.addColorStop(1, 'rgba(59, 130, 246, 0)');
-    ctx.fillStyle = r1;
-    ctx.beginPath();
-    ctx.arc(350, 320, 280, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Orb 2: Target Color (Vibrant Magenta #FF3366)
-    var r2 = ctx.createRadialGradient(850, 480, 20, 850, 480, 250);
-    r2.addColorStop(0, '#FF3366');
-    r2.addColorStop(0.6, '#ec4899');
-    r2.addColorStop(1, 'rgba(236, 72, 153, 0)');
-    ctx.fillStyle = r2;
-    ctx.beginPath();
-    ctx.arc(850, 480, 250, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Orb 3: Emerald Accent
-    var r3 = ctx.createRadialGradient(600, 250, 10, 600, 250, 180);
-    r3.addColorStop(0, '#10b981');
-    r3.addColorStop(0.7, '#059669');
-    r3.addColorStop(1, 'rgba(5, 150, 105, 0)');
-    ctx.fillStyle = r3;
-    ctx.beginPath();
-    ctx.arc(600, 250, 180, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Modern card shape in center
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 2;
-    var x = 300, y = 200, w = 600, h = 400, r = 24;
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // Typography
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 42px "Inter", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('GRADIAL STUDIO', 600, 380);
-
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = '600 18px "Inter", sans-serif';
-    ctx.fillText('Skeuomorphic Color Eraser & Gradient Engine', 600, 420);
-    ctx.restore();
-
-    var sampleDataUrl = canvas.toDataURL('image/png');
-    var img = new Image();
-    img.onload = function () {
-      state.imageObj = img;
-      state.imageSrc = sampleDataUrl;
-
-      if (!state.origCanvas) {
-        state.origCanvas = document.createElement('canvas');
-        state.origCtx = state.origCanvas.getContext('2d', { willReadFrequently: true });
+    if (state.undoStack.length > 0) {
+      var last = state.undoStack[state.undoStack.length - 1];
+      if (last.image === snap.image && last.tolerance === snap.tolerance && last.feather === snap.feather && last.tone === snap.tone && last.warmth === snap.warmth && last.lut === snap.lut && last.blur === snap.blur && last.hue === snap.hue) {
+        return;
       }
-      state.origCanvas.width = img.width;
-      state.origCanvas.height = img.height;
-      state.origCtx.drawImage(img, 0, 0);
+    }
 
-      if (editorCanvas) {
-        editorCanvas.width = img.width;
-        editorCanvas.height = img.height;
-        if (editorCtx) {
-          editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
-          editorCtx.drawImage(img, 0, 0);
+    if (state.undoStack.length >= 50) state.undoStack.shift();
+    state.undoStack.push(snap);
+    state.redoStack = [];
+    updateUndoRedoButtons();
+  }
+
+  function handleUndo() {
+    if (!state.undoStack || state.undoStack.length <= 1) return;
+    audioManager.play('pop');
+
+    var currentSnap = captureCurrentSnapshot();
+    if (currentSnap) {
+      if (!state.redoStack) state.redoStack = [];
+      state.redoStack.push(currentSnap);
+    }
+
+    state.undoStack.pop();
+    var prevSnap = state.undoStack[state.undoStack.length - 1];
+    restoreUndoState(prevSnap);
+  }
+
+  function handleRedo() {
+    if (!state.redoStack || state.redoStack.length === 0) return;
+    audioManager.play('pop');
+
+    var nextSnap = state.redoStack.pop();
+    if (nextSnap) {
+      var currentSnap = captureCurrentSnapshot();
+      if (currentSnap && state.undoStack) {
+        state.undoStack.push(currentSnap);
+      }
+      restoreUndoState(nextSnap);
+    }
+  }
+
+  function restoreUndoState(snapshot) {
+    if (!snapshot || !editorCanvas || !editorCtx) return;
+    var img = new Image();
+    img.onload = function() {
+      editorCanvas.width = img.width;
+      editorCanvas.height = img.height;
+      editorCtx.clearRect(0, 0, img.width, img.height);
+      editorCtx.drawImage(img, 0, 0);
+
+      if (snapshot.targetColor) {
+        state.targetColor = { r: snapshot.targetColor.r, g: snapshot.targetColor.g, b: snapshot.targetColor.b };
+        updateColorDisplay();
+      }
+      if (snapshot.targetColorPicked !== undefined) {
+        state.targetColorPicked = snapshot.targetColorPicked;
+      }
+
+      if (snapshot.tolerance !== undefined && $('tolerance-slider')) {
+        $('tolerance-slider').value = snapshot.tolerance;
+        if ($('tolerance-val')) $('tolerance-val').textContent = snapshot.tolerance + '%';
+        state.tolerance = Number(snapshot.tolerance);
+      }
+      if (snapshot.smoothing !== undefined && $('smoothing-slider')) {
+        $('smoothing-slider').value = snapshot.smoothing;
+        if ($('smoothing-val')) $('smoothing-val').textContent = snapshot.smoothing;
+        state.smoothing = Number(snapshot.smoothing);
+      }
+      if (snapshot.feather !== undefined && $('edge-feather-slider')) {
+        $('edge-feather-slider').value = snapshot.feather;
+        if ($('edge-feather-val')) $('edge-feather-val').textContent = snapshot.feather + '%';
+        state.edgeFeather = Number(snapshot.feather);
+      }
+      if (snapshot.blur !== undefined && $('filter-blur')) {
+        $('filter-blur').value = snapshot.blur;
+        if ($('filter-blur-val')) $('filter-blur-val').textContent = snapshot.blur + 'px';
+      }
+      if (snapshot.hue !== undefined && $('filter-hue')) {
+        $('filter-hue').value = snapshot.hue;
+        if ($('filter-hue-val')) $('filter-hue-val').textContent = snapshot.hue + '°';
+      }
+
+      if (snapshot.tone !== undefined && snapshot.warmth !== undefined && state.imgStylePad) {
+        state.imgStylePad.tone = snapshot.tone;
+        state.imgStylePad.warmth = snapshot.warmth;
+        if ($('img-style-pad-puck')) {
+          $('img-style-pad-puck').style.left = (50 + snapshot.warmth * 0.5) + '%';
+          $('img-style-pad-puck').style.top = (50 - snapshot.tone * 0.5) + '%';
+        }
+        if ($('img-style-pad-readout')) {
+          $('img-style-pad-readout').textContent = 'Tone: ' + (snapshot.tone > 0 ? '+' : '') + Math.round(snapshot.tone) + ' | Warmth: ' + (snapshot.warmth > 0 ? '+' : '') + Math.round(snapshot.warmth);
         }
       }
 
-      state.undoStack = [];
-      state.redoStack = [];
+      if (snapshot.lut !== undefined) {
+        state.imgLut = snapshot.lut;
+        renderLutGrid('img-lut-grid', state.imgLut, function (lutId) {
+          state.imgLut = lutId;
+          updatePreviewFromEditorCanvas();
+        });
+      }
 
-      var pBtn = $('pick-color-btn'); if (pBtn) pBtn.disabled = false;
-      var tSld = $('tolerance-slider'); if (tSld) tSld.disabled = false;
-
-      hide($('upload-placeholder'));
-      show($('source-canvas-wrap'));
-      if ($('upload-label-text')) $('upload-label-text').textContent = 'Change Image';
-
-      state.zoom = 1;
-      state.panX = 0;
-      state.panY = 0;
-      if (typeof updateCanvasTransform === 'function') updateCanvasTransform();
-      state.targetColorHex = '#FF3366';
-      if ($('target-color-thumb')) $('target-color-thumb').style.backgroundColor = '#FF3366';
-      if ($('target-color-hex')) $('target-color-hex').textContent = '#FF3366';
-
-      scheduleProcessing();
-      refreshLucideIcons();
+      initSliderFills();
+      updatePreviewFromEditorCanvas();
+      updateUndoRedoButtons();
     };
-    img.src = sampleDataUrl;
+    img.src = snapshot.image;
+  }
+
+  function updateUndoRedoButtons() {
+    ['image-undo-btn', 'img-undo-btn'].forEach(function(id) {
+      var btn = $(id);
+      if (btn) btn.disabled = !state.undoStack || state.undoStack.length <= 1;
+    });
+    ['image-redo-btn', 'img-redo-btn'].forEach(function(id) {
+      var btn = $(id);
+      if (btn) btn.disabled = !state.redoStack || state.redoStack.length === 0;
+    });
   }
 
   // --- Tab Switcher ---
 
   function switchTab(tab) {
+    if (tab === 'video') {
+      if (typeof showToast === 'function') showToast('Video Studio is coming soon in the next update!', 2500);
+      return;
+    }
     state.activeTab = tab;
     if ($('tab-btn-image')) $('tab-btn-image').classList.toggle('active', tab === 'image');
     if ($('tab-btn-gradient')) $('tab-btn-gradient').classList.toggle('active', tab === 'gradient');
@@ -4907,6 +5244,7 @@
         loadSampleVideoPreview();
       }
     }
+    initSliderFills();
     refreshLucideIcons();
   }
 
@@ -4915,5 +5253,6 @@
   } else {
     initApp();
   }
+  window.addEventListener('load', refreshLucideIcons);
 
 })();
