@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2349A078'/><text x='50' y='68' font-size='60' font-weight='800' text-anchor='middle' fill='%23ffffff'>G</text></svg>">
   <link rel="stylesheet" href="style.css">
   <script src="assets/lucide.min.js"></script>
 </head>
@@ -64,12 +65,13 @@
 
       <div style="max-height: 320px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; color: var(--text-sub); display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
         <div style="background: var(--bg-recessed); padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.78rem;">
-          Copyright (c) 2026 RSA Engineering. All rights reserved.<br>
+          Copyright (c) 2026 RSA Engineering & Contributors.<br>
+          Licensed under Open Source Software Licensing (GPLv3 / MIT Compatible).<br>
           Creative Assistance: Ahmad2012k
         </div>
-        <p><strong>1. Proprietary Rights:</strong> This source code, application assets, and compiled software are proprietary and confidential. No part of this software may be copied, reproduced, modified, distributed, published, or transmitted in any form or by any means without prior written permission from the copyright owner.</p>
-        <p><strong>2. Authorized Usage:</strong> Gradial provides tools for creating, editing, and exporting linear, positional, and procedural animated gradients. Exported gradient media (PNG, MP4, WebM) created by users belong to the respective user for personal and commercial projects.</p>
-        <p><strong>3. Unauthorized Copying:</strong> Unauthorized copying or redistribution of this software, via any medium, is strictly prohibited.</p>
+        <p><strong>1. Open Source Software License:</strong> Gradial is open-source software provided under free and open-source licensing terms in compliance with IMG.LY background removal and media processing requirements.</p>
+        <p><strong>2. Authorized Usage & Contributions:</strong> Gradial provides tools for creating, editing, and exporting linear, positional, procedural animated gradients, AI background removal, and video subtitles. Source code is freely available for open-source inspection, contribution, and modification.</p>
+        <p><strong>3. User Media Rights:</strong> All exported media (PNG, MP4, WebM, VTT, SRT) created by users belong to the respective user for personal and commercial projects.</p>
       </div>
 
       <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 12px;">
@@ -341,9 +343,6 @@
                   <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
                   <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Special & Retro Aesthetics</h4>
                 </div>
-                <span class="badge-sk" style="background: var(--bg-recessed); border: 1px solid var(--border-color); color: var(--accent-primary); font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; display: flex; align-items: center; gap: 4px;">
-                  <i data-lucide="sparkles" style="width: 11px; height: 11px;"></i> Special Themes Unlocked
-                </span>
               </div>
               <div class="theme-grid" style="filter: none; opacity: 1; pointer-events: auto; user-select: auto;">
                 <!-- Frutiger Aero -->
@@ -450,6 +449,51 @@
                 <button id="setting-export-alpha-toggle" class="segmented-btn" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
                   <i data-lucide="layers"></i> <span id="setting-export-alpha-text">Disabled</span>
                 </button>
+              </div>
+            </div>
+
+            <!-- Groq API Key Configuration -->
+            <div class="settings-card-box" style="margin-top: 16px;">
+              <h4 class="settings-card-title"><i data-lucide="key" style="width:18px; height:18px; color:var(--accent-primary);"></i> Groq API Key (AI Subtitles)</h4>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+                Enter your Groq API key (`gsk_...`) to enable speech-to-text AI subtitle generation for video clips.
+              </p>
+              
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" id="settings-groq-api-key-input" placeholder="gsk_..." class="sk-input" style="flex: 1; font-family: monospace; font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
+                  <button class="btn-sk btn-secondary-sk" id="toggle-groq-key-vis-settings" title="Show/Hide Key" style="padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                  </button>
+                </div>
+
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+                  <button class="btn-sk btn-primary-sk" id="check-groq-api-key-btn" style="padding: 6px 14px; font-size: 0.76rem; display: flex; align-items: center; gap: 6px;">
+                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Check API Key
+                  </button>
+                  <span id="settings-groq-key-status" style="font-size: 0.72rem; font-weight: 700; color: var(--text-sub); padding: 4px 10px; border-radius: 4px; background: var(--bg-recessed); border: 1px solid var(--border-subtle);">
+                    Not Checked
+                  </span>
+                </div>
+
+                <!-- Walkthrough Guide for Groq API Key & Whisper v3 Turbo -->
+                <div style="margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--bg-recessed); border: 1px solid var(--border-color);">
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 8px;">
+                    <i data-lucide="help-circle" style="width: 14px; height: 14px;"></i> How to get a Groq API Key (Whisper Large v3 Turbo)
+                  </div>
+                  
+                  <ol style="margin: 0; padding-left: 18px; font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; line-height: 1.4;">
+                    <li>
+                      Go to <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700; text-decoration: underline;">console.groq.com/keys</a> and sign up or log in for free.
+                    </li>
+                    <li>
+                      Click <strong style="color: var(--text-main);">"Create API Key"</strong>, name it (e.g., <em>Gradial AI Subtitles</em>), and copy your key (<code style="font-family: monospace; font-size: 0.7rem; color: var(--accent-primary); background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">gsk_...</code>).
+                    </li>
+                    <li>
+                      Paste your key into the field above and click <strong style="color: var(--text-main);">"Check API Key"</strong>. The high-speed <strong style="color: var(--accent-primary);">Whisper Large v3 Turbo</strong> AI model will automatically generate subtitles for your videos!
+                    </li>
+                  </ol>
+                </div>
               </div>
             </div>
           </div>
@@ -587,7 +631,7 @@
           <button class="tab-pill-btn" id="tab-btn-gradient" data-tab="gradient">
             <i data-lucide="palette"></i> Gradient
           </button>
-          <button class="tab-pill-btn" id="tab-btn-video" data-tab="video" style="opacity: 0.65;" title="Video Studio (Coming Soon)">
+          <button class="tab-pill-btn" id="tab-btn-video" data-tab="video">
             <i data-lucide="video"></i> Video
           </button>
         </div>
@@ -622,24 +666,88 @@
                   <div class="section-indicator"></div>
                   <span class="section-title-text">Tolerance</span>
                 </div>
-                <span class="slider-val-badge" id="tolerance-val">15%</span>
+                <span class="slider-val-badge" id="tolerance-val">0%</span>
               </div>
-              <input type="range" id="tolerance-slider" min="0" max="100" value="15" disabled>
+              <input type="range" id="tolerance-slider" min="0" max="100" value="0">
               <div class="slider-sublabels">
-                <span>Strict</span>
-                <span>Loose</span>
+                <span>Off (0%)</span>
+                <span>Max (100%)</span>
               </div>
             </div>
 
             <div class="slider-container" style="margin-top: 12px;">
               <div class="slider-info-row">
                 <span class="slider-title">Edge Feather</span>
-                <span class="slider-val-badge" id="edge-feather-val">20%</span>
+                <span class="slider-val-badge" id="edge-feather-val">0%</span>
               </div>
-              <input type="range" id="edge-feather-slider" min="0" max="100" value="20">
-              <div class="slider-sublabels">
-                <span>Hard edge</span>
-                <span>Soft edge</span>
+              <input type="range" id="edge-feather-slider" min="0" max="100" value="0">
+            </div>
+          </div>
+
+          <!-- AI Magic Tools Section -->
+          <div class="divider"></div>
+          <div class="section-block">
+            <div class="section-header">
+              <div class="section-indicator"></div>
+              <span class="section-title-text"><i data-lucide="wand-2" style="width:14px; height:14px; color:var(--accent-primary);"></i> Background Removal</span>
+            </div>
+            
+            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+              <button class="btn-sk btn-primary-sk" id="ai-remove-bg-btn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 0.76rem; padding: 8px 6px;">
+                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Remove BG
+              </button>
+              <button class="btn-sk btn-secondary-sk" id="ai-dof-btn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 0.76rem; padding: 8px 6px;">
+                <i data-lucide="aperture" style="width: 14px; height: 14px;"></i> Depth of Field
+              </button>
+            </div>
+
+            <!-- Model Quality Switcher -->
+            <div class="segmented-control" style="margin-top: 4px;">
+              <button class="segmented-btn active" id="ai-bg-model-fast" data-model="small">Fast Model</button>
+              <button class="segmented-btn" id="ai-bg-model-quality" data-model="medium">High Quality</button>
+            </div>
+
+            <!-- Depth of Field Blur Slider (visible when Depth of Field is active) -->
+            <div id="dof-blur-container" class="slider-container hidden" style="margin-top: 10px;">
+              <div class="slider-info-row">
+                <span class="slider-title">Background Bokeh Blur</span>
+                <span class="slider-val-badge" id="dof-blur-val">12px</span>
+              </div>
+              <input type="range" id="dof-blur-slider" min="0" max="40" value="12">
+            </div>
+
+            <!-- Backdrop Replacement Mode -->
+            <div style="margin-top: 12px;">
+              <div class="slider-title" style="margin-bottom: 6px;">Backdrop Replacement</div>
+              <div class="segmented-control">
+                <button class="segmented-btn active" id="bg-replace-transparent" data-bg="transparent">
+                  <i data-lucide="grid"></i> PNG Alpha
+                </button>
+                <button class="segmented-btn" id="bg-replace-mesh" data-bg="mesh">
+                  <i data-lucide="palette"></i> Mesh
+                </button>
+                <button class="segmented-btn" id="bg-replace-solid" data-bg="solid">
+                  <i data-lucide="square"></i> Solid
+                </button>
+              </div>
+
+              <!-- Solid Backdrop Color Trigger (visible in Solid mode) -->
+              <div id="bg-solid-color-row" class="hidden" style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; background: var(--bg-recessed); padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+                <span style="font-size: 0.74rem; font-weight: 700; color: var(--text-sub);">Solid Color:</span>
+                <div class="color-picker-wrap custom-cp-trigger" id="bg-solid-color-picker" style="cursor: pointer;">
+                  <div class="color-picker-swatch" id="bg-solid-color-swatch" style="background-color: #171B19; width: 22px; height: 22px; border-radius: 4px; border: 1px solid #FFFFFF;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Processing Status & Progress Bar -->
+            <div id="ai-bg-status-container" class="hidden" style="margin-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 0.72rem; font-weight: 700; color: var(--text-main);">
+                <span id="ai-bg-status-text">Initializing AI Model...</span>
+                <span id="ai-bg-percent-text">0%</span>
+              </div>
+              <div class="ai-progress-track">
+                <div class="ai-progress-fill" id="ai-bg-progress-bar" style="width: 0%;"></div>
               </div>
             </div>
           </div>
@@ -717,7 +825,7 @@
           <div class="section-block">
             <div class="section-header">
               <div class="section-indicator"></div>
-              <span class="section-title-text">Cinematic Filters</span>
+              <span class="section-title-text">Filters for Images</span>
             </div>
 
             <div class="lut-preset-grid" id="img-lut-grid">
@@ -1016,10 +1124,109 @@
               <button class="btn-sk btn-primary-sk" id="video-upload-btn">
                 <i data-lucide="upload-cloud"></i> Upload Video File
               </button>
-              <button class="btn-sk btn-secondary-sk" id="btn-load-sample-video">
-                <i data-lucide="play-circle"></i> Load Interactive Sample
+              <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;" id="video-file-name">No video file loaded</div>
+            </div>
+          </div>
+
+          <!-- AI Audio Transcription & Subtitles Block -->
+          <div class="section-block" id="video-transcribe-block">
+            <div class="section-header">
+              <div class="section-indicator" style="background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></div>
+              <span class="section-title-text"><i data-lucide="sparkles" style="width:14px; height:14px; color:var(--accent-primary);"></i> AI Subtitles</span>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <!-- API Key Status / Notice -->
+              <div id="video-api-key-status-box" style="padding: 8px 10px; border-radius: 6px; background: var(--bg-recessed); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; font-weight: 700;">
+                  <span style="color: var(--text-sub);">Groq API Key:</span>
+                  <span id="video-key-status-badge" style="color: var(--accent-primary); font-size: 0.68rem; font-weight: 700;">No API Key</span>
+                </div>
+                <div id="video-key-notice-text" style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.3;">
+                  No API key inserted for subtitle generation. Please configure your Groq API key in Settings.
+                </div>
+                <button class="btn-sk btn-secondary-sk btn-xs-compact" id="btn-open-settings-api-key" style="margin-top: 2px; font-size: 0.7rem; justify-content: center; width: 100%;">
+                  <i data-lucide="settings" style="width:12px; height:12px;"></i> Open API Settings
+                </button>
+              </div>
+
+              <!-- Language & Transliteration Settings -->
+              <div>
+                <div style="font-size:0.72rem; font-weight:700; color:var(--text-sub); margin-bottom:4px;">Transcription Mode:</div>
+                <select id="transcribe-language-mode" class="sk-select" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); font-size:0.75rem; font-weight:600;">
+                  <option value="hinglish_roman" selected>Hinglish</option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                </select>
+              </div>
+
+              <!-- Generate Subtitles Button -->
+              <button class="btn-sk btn-primary-sk" id="btn-generate-subtitles" style="width:100%; margin-top:2px;">
+                <i data-lucide="sparkles"></i> Generate AI Subtitles
               </button>
-              <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;" id="video-file-name">Interactive Sample Video Active</div>
+
+              <!-- Progress Track -->
+              <div id="subtitles-progress-container" class="hidden" style="margin-top:6px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">
+                  <span id="subtitles-progress-text">Extracting Audio...</span>
+                  <span id="subtitles-progress-pct">0%</span>
+                </div>
+                <div class="ai-progress-track" style="height:6px; border-radius:3px; background:var(--bg-recessed); overflow:hidden;">
+                  <div id="subtitles-progress-bar" class="ai-progress-fill" style="width:0%; height:100%; background:linear-gradient(90deg, var(--accent-primary), #55FF00); transition:width 0.2s;"></div>
+                </div>
+              </div>
+
+              <!-- Subtitle Styling Controls -->
+              <div id="subtitle-style-controls" class="hidden" style="margin-top:6px; padding:10px; border-radius:8px; background:var(--bg-card); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:0.72rem; font-weight:800; color:var(--text-main); text-transform:uppercase; letter-spacing:0.5px;">Caption Appearance</div>
+                
+                <div style="display:flex; gap:6px; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.72rem; color:var(--text-sub);">Position:</span>
+                  <div class="segmented-control" style="gap:2px;">
+                    <button class="segmented-btn active" id="sub-pos-bottom" style="padding:2px 8px; font-size:0.7rem;">Bottom</button>
+                    <button class="segmented-btn" id="sub-pos-center" style="padding:2px 8px; font-size:0.7rem;">Center</button>
+                    <button class="segmented-btn" id="sub-pos-top" style="padding:2px 8px; font-size:0.7rem;">Top</button>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:6px; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.72rem; color:var(--text-sub);">Font Size:</span>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <input type="range" id="sub-font-size-slider" min="14" max="36" value="22" style="width:100px;">
+                    <span id="sub-font-size-val" style="font-size:0.72rem; font-weight:700; color:var(--accent-primary);">22px</span>
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:6px; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.72rem; color:var(--text-sub);">Text Color:</span>
+                  <input type="color" id="sub-text-color-picker" value="#FFFF00" style="width:28px; height:24px; border:none; border-radius:4px; cursor:pointer; background:none;">
+                </div>
+
+                <div style="display:flex; gap:6px; align-items:center; justify-content:space-between;">
+                  <span style="font-size:0.72rem; color:var(--text-sub);">Highlight Box:</span>
+                  <input type="color" id="sub-bg-color-picker" value="#000000" style="width:28px; height:24px; border:none; border-radius:4px; cursor:pointer; background:none;">
+                </div>
+
+                <!-- Subtitles Download & Burn Toggle -->
+                <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+                  <div style="display:flex; gap:6px;">
+                    <button class="btn-sk btn-secondary-sk" id="btn-download-vtt" style="flex:1; font-size:0.7rem; padding:4px 6px;">
+                      <i data-lucide="file-text"></i> Export .VTT
+                    </button>
+                    <button class="btn-sk btn-secondary-sk" id="btn-download-srt" style="flex:1; font-size:0.7rem; padding:4px 6px;">
+                      <i data-lucide="file-text"></i> Export .SRT
+                    </button>
+                  </div>
+                  <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.72rem;">
+                    <span style="color:var(--text-sub); font-weight:600;">Burn Captions on Export:</span>
+                    <button class="toggle-switch-sk active" id="toggle-burn-captions">
+                      <div class="toggle-knob-sk"></div>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
           </div>
 
@@ -1061,18 +1268,6 @@
             </div>
           </div>
 
-          <!-- 2D Photographic Style Pad -->
-          <div class="section-block" id="video-style-pad-block">
-            <div class="section-header">
-              <div class="section-indicator"></div>
-              <span class="section-title-text">2D Tone & Warmth Pad</span>
-            </div>
-            <div id="vid-style-pad-touch" class="style-pad-area" style="position:relative; width:100%; height:130px; border-radius:12px; border:1px solid var(--border-color); background:var(--bg-recessed); overflow:hidden; cursor:crosshair;">
-              <div id="vid-style-pad-dots" style="position:absolute; inset:0;"></div>
-              <div id="vid-style-pad-glow" style="position:absolute; width:40px; height:40px; border-radius:50%; background:var(--accent-primary); filter:blur(15px); opacity:0.4; pointer-events:none; transform:translate(-50%,-50%);"></div>
-              <div id="vid-style-pad-puck" style="position:absolute; width:16px; height:16px; border-radius:50%; background:var(--accent-primary); border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.5); pointer-events:none; transform:translate(-50%,-50%); top:50%; left:50%;"></div>
-            </div>
-          </div>
 
           <!-- Cinematic LUTs -->
           <div class="section-block" id="video-lut-block">
@@ -1226,14 +1421,57 @@
 
       <!-- ================= VIDEO WORKSPACE ================= -->
       <div id="workspace-video-layout" class="workspace-layout hidden">
-        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; align-items:center; justify-content:center; background:var(--bg-recessed); padding:20px; position:relative; overflow:hidden;">
-          <video id="video-player-el" controls autoplay loop class="hidden" style="max-width:100%; max-height:100%; border-radius:var(--radius-md); box-shadow:0 10px 30px rgba(0,0,0,0.5);"></video>
-          <div id="video-empty-state" class="hidden" style="text-align:center; padding:60px 40px; max-width:480px;">
+        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-recessed); padding:20px; position:relative; overflow:hidden;">
+          
+          <!-- Video Canvas / Player Container -->
+          <div id="video-canvas-container" style="position:relative; max-width:100%; max-height:calc(100% - 60px); display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+            <video id="video-player-el" class="hidden" style="max-width:100%; max-height:100%; border-radius:var(--radius-md); display:block;"></video>
+            <!-- Live Synchronized Subtitle Overlay -->
+            <div id="video-subtitle-overlay" class="hidden" style="position:absolute; bottom:10%; left:50%; transform:translateX(-50%); width:90%; text-align:center; pointer-events:none; z-index:20; transition:all 0.15s ease;">
+              <span id="video-subtitle-text" style="display:inline-block; font-family:var(--font-heading); font-size:22px; font-weight:800; color:#FFFF00; background:rgba(0,0,0,0.85); padding:6px 14px; border-radius:6px; text-shadow:0 2px 8px rgba(0,0,0,0.9); max-width:100%; word-wrap:break-word; line-height:1.3;"></span>
+            </div>
+          </div>
+
+          <!-- Video Playback Transport Controls Bar (3D Skeuomorphic Deck) -->
+          <div id="video-controls-bar" class="hidden skeu-media-deck">
+            <button id="btn-vid-play-pause" class="skeu-deck-btn play-btn" title="Play / Pause">
+              <i data-lucide="play" style="width:16px; height:16px;"></i>
+            </button>
+            
+            <button id="btn-vid-rewind" class="skeu-deck-btn seek-btn" title="Rewind 10s">
+              <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i> -10s
+            </button>
+
+            <button id="btn-vid-forward" class="skeu-deck-btn seek-btn" title="Forward 10s">
+              <i data-lucide="rotate-cw" style="width:13px; height:13px;"></i> +10s
+            </button>
+
+            <div id="vid-timecode-display" class="skeu-lcd-display">
+              00:00 / 00:00
+            </div>
+            
+            <!-- Smooth 3D Beveled Seek Track -->
+            <div id="vid-seek-track-container" class="skeu-seek-track-wrap">
+              <div class="skeu-seek-track-bg">
+                <div id="vid-seek-buffer-bar" class="skeu-buffer-bar"></div>
+                <div id="vid-seek-progress-fill" class="skeu-progress-fill"></div>
+              </div>
+              <div id="vid-seek-handle" class="skeu-seek-knob"></div>
+            </div>
+
+            <!-- 3D Volume Section -->
+            <div class="skeu-volume-wrap">
+              <i data-lucide="volume-2" class="skeu-volume-icon"></i>
+              <input type="range" id="vid-volume-slider" min="0" max="100" value="100" class="skeu-vol-slider">
+            </div>
+          </div>
+
+          <div id="video-empty-state" style="text-align:center; padding:60px 40px; max-width:480px;">
             <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, var(--color-stormy-teal))); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
               <i data-lucide="film" style="width:36px; height:36px; color:#fff;"></i>
             </div>
-            <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:12px; letter-spacing:-0.02em;">Video Studio</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">Upload a video or click "Load Interactive Sample" to test color grading tools in real-time.</p>
+            <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:12px; letter-spacing:-0.02em;">Video Studio Workspace</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">Upload a video file to generate AI Hinglish subtitles, apply 3D color grading LUTs, and burn captions live.</p>
           </div>
         </div>
       </div>
@@ -1314,14 +1552,7 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99999;"></div>
 
-  <script>
-    (function() {
-      var s = document.createElement('script');
-      s.src = 'https://unpkg.com/mp4-muxer/build/mp4-muxer.js';
-      s.onerror = function() { console.warn('mp4-muxer CDN failed to load; webm fallback active.'); };
-      document.head.appendChild(s);
-    })();
-  </script>
+  <!-- WebM / MP4 Video Exporter Fallback -->
   <script src="app.js"></script>
 </body>
 </html>

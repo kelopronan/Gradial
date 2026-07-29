@@ -27,7 +27,7 @@ My friend **[Ahmad2012k](https://github.com/Ahmad2012k)** provided the creative 
 - **RSA Engineering Terms & Conditions & Footer:** Includes `© 2026 RSA Engineering. All rights reserved.` and `Terms & Conditions` links on all sidebar tabs (`Image`, `Gradient`, `Video`) with a modal displaying legal license terms.
 - **21 Aesthetic Skeuomorphic, Claymorphic & Glassmorphic Themes:**
   - **Standard Modern Themes:** Seaweed Default, Golden Sand (Light Luxe), Fire & Ice, Aqua Blossom, Oxidized Earth, Dusty Slate, Midnight Purple, Sakura, Neon Noir, Ocean Depths, Vampire Velvet, Mystic Steel, Jungle Celadon, Neon Forest, Retro Pop, Nord, Solarized Dark, Synthwave.
-  - **Special & Retro Aesthetics (Unlocked):** Frutiger Aero (translucent glass + wallpaper), Original Xbox (OG 2001 dashboard with Xbox jewel orb wallpaper, cyber-green HUD panels, jewel sphere slider thumbs, and neon green glow effects), and Windows XP Luna (classic desktop chrome).
+  - **Special & Retro Aesthetics:** Frutiger Aero (translucent glass + wallpaper), Original Xbox (OG 2001 dashboard with Xbox jewel orb wallpaper, cyber-green HUD panels, jewel sphere slider thumbs, and neon green glow effects), and Windows XP Luna (classic desktop chrome).
 - **Uniform Tab Navigation Vector Icon Sizing:** All header tab pill buttons (`Image`, `Gradient`, `Video`) use 16px × 16px vector Lucide icons with uniform line weights, text alignment, and colors across all themes.
 
 ## Tech Stack
