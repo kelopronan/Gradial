@@ -3,20 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Gradial — Premium Skeuomorphic Image Color Eraser & Animated Gradient Generator">
-  <title>Gradial — Color Eraser & Gradient Studio</title>
+  <meta name="description" content="Gradial - Premium Skeuomorphic Image Color Eraser & Animated Gradient Generator">
+  <title>Gradial - Color Eraser & Gradient Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2349A078'/><text x='50' y='68' font-size='60' font-weight='800' text-anchor='middle' fill='%23ffffff'>G</text></svg>">
   <link rel="stylesheet" href="style.css">
-  <script src="assets/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2"></script>
 </head>
 <body>
+
+  <!-- ==================== INITIAL GRADIAL APP LOADER ==================== -->
+  <div id="gradial-initial-loader" class="initial-app-loader dismissed" style="display: none;">
+    <div class="initial-loader-ambient-glow"></div>
+    <div class="initial-loader-content">
+      <div class="initial-brand-ring-wrap">
+        <div class="initial-brand-ring-outer"></div>
+        <div class="initial-brand-ring"></div>
+        <div class="initial-brand-logo">G</div>
+      </div>
+      <div class="initial-brand-title-wrap">
+        <div class="initial-brand-title">Gradial</div>
+        <span class="initial-brand-badge"><i class="ph-fill ph-sparkle" style="font-size:11px;"></i> PRO</span>
+      </div>
+      <div class="initial-brand-sub">ULTIMATE GRAPHICS &amp; VIDEO STUDIO</div>
+      <div class="initial-progress-track">
+        <div id="initial-progress-bar" class="initial-progress-fill" style="width: 0%;">
+          <div class="initial-progress-shimmer"></div>
+        </div>
+      </div>
+      <div class="initial-loader-footer">
+        <div id="initial-loader-status" class="initial-loader-status">Igniting Studio Engine &amp; GPU Pipeline...</div>
+        <span id="initial-loader-percent" class="initial-loader-percent">0%</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Hidden Processing Canvases -->
   <canvas id="processing-canvas" class="hidden"></canvas>
   <canvas id="export-canvas" class="hidden"></canvas>
+
+  <!-- ==================== GRADIAL EXPORT OPTIONS POPUP MODAL ==================== -->
+  <div id="gradial-export-options-modal" class="export-modal-backdrop hidden" style="z-index: 9990;">
+    <div class="gradial-export-popup-card">
+      <div class="gradial-export-popup-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="gradial-export-icon-badge">
+            <i class="ph-fill ph-download-simple"></i>
+          </div>
+          <div>
+            <h3 class="gradial-export-title">Export Subtitles &amp; Video</h3>
+          </div>
+        </div>
+        <button id="btn-close-export-options" class="gradial-modal-close-btn" title="Close"><i class="ph-fill ph-x"></i></button>
+      </div>
+
+      <div class="gradial-export-popup-body" style="gap: 16px;">
+        
+        <!-- SUBTITLES EXPORT (ACTIVE NOW) -->
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; background: var(--bg-recessed); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <label class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--text-white);">
+              <i class="ph-fill ph-subtitles" style="color: var(--accent-primary); font-size: 16px;"></i> Subtitle Files (Ready for Download)
+            </label>
+            <span style="background: rgba(0, 255, 136, 0.15); color: var(--accent-primary); font-weight: 800; font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; border: 1px solid rgba(0, 255, 136, 0.3);">
+              Active
+            </span>
+          </div>
+          
+          <div style="display: flex; gap: 10px; width: 100%; margin-top: 4px;">
+            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-srt" style="flex: 1; padding: 12px; font-size: 0.85rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent-primary); color: #000;">
+              <i class="ph-fill ph-download-simple" style="font-size: 15px;"></i> Download .SRT
+            </button>
+            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-vtt" style="flex: 1; padding: 12px; font-size: 0.85rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent-primary); color: #000;">
+              <i class="ph-fill ph-file-code" style="font-size: 15px;"></i> Download .VTT
+            </button>
+          </div>
+        </div>
+
+        <!-- VIDEO EXPORT (COMING SOON / LOCKED) -->
+        <div style="position: relative; border: 1px dashed var(--border-subtle); padding: 14px; border-radius: 14px; background: rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; opacity: 0.8;">
+              <i class="ph-fill ph-film-strip" style="color: var(--accent-primary);"></i> Video Rendering Preferences
+            </span>
+            <span style="background: var(--accent-primary); color: #000; font-weight: 800; font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">
+              <i class="ph-fill ph-lock-key"></i> Coming Soon
+            </span>
+          </div>
+
+          <!-- Option 1: Burn Captions Toggle -->
+          <div class="gradial-export-row" style="opacity: 0.5; pointer-events: none;">
+            <div class="gradial-export-label-group">
+              <label class="gradial-export-label">Burn Subtitles onto Video</label>
+              <span class="gradial-export-desc">Embed dynamic karaoke highlights directly into video frames</span>
+            </div>
+            <label class="gradial-switch">
+              <input type="checkbox" id="popup-burn-captions-toggle" checked disabled>
+              <span class="gradial-slider-round"></span>
+            </label>
+          </div>
+
+          <!-- Option 2: Target Resolution & FPS -->
+          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.5; pointer-events: none;">
+            <label class="gradial-export-label">Target Resolution &amp; Framerate</label>
+            <select id="popup-video-scale-select" class="sk-select vs-select" style="width: 100%; font-weight: 700; padding: 10px 14px;" disabled>
+              <option value="1" selected>1080p Full HD (60 FPS)</option>
+              <option value="2">4K Ultra HD (60 FPS)</option>
+              <option value="0.75">720p HD (30 FPS)</option>
+            </select>
+          </div>
+
+          <!-- Option 3: Video Format -->
+          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.5; pointer-events: none;">
+            <label class="gradial-export-label">Encoding Format</label>
+            <select id="popup-video-format-select" class="sk-select vs-select" style="width: 100%; font-weight: 700; padding: 10px 14px;" disabled>
+              <option value="mp4" selected>MP4 Video (H.264 / AAC Audio)</option>
+              <option value="webm">WebM Video (VP9 / Opus Audio)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="gradial-export-popup-footer">
+        <button id="btn-start-video-export" class="btn-sk btn-secondary-sk gradial-export-main-btn" style="width: 100%; font-size: 0.9rem; font-weight: 800; padding: 12px; opacity: 0.7; cursor: not-allowed;">
+          <i class="ph-fill ph-lock-key" style="font-size: 16px;"></i>
+          <span>Video Exporting • Coming Soon</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- ==================== SNAPPY EXPORT PROGRESS MODAL ==================== -->
   <div id="export-modal-overlay" class="export-modal-backdrop hidden">
@@ -24,7 +143,7 @@
 
       <div class="export-modal-header">
         <div class="export-spinner-icon" id="export-icon-container">
-          <i data-lucide="loader" class="spin-icon" style="color:var(--color-seaweed);"></i>
+          <i class="ph-fill ph-spinner spin-icon" style="color:var(--color-seaweed);"></i>
         </div>
         <div class="export-header-text">
           <h3 id="export-modal-title" class="export-modal-h3">Exporting</h3>
@@ -45,7 +164,7 @@
 
       <div style="display: flex; justify-content: flex-end; margin-top: 14px;">
         <button class="btn-sk btn-secondary-sk btn-xs-compact" id="export-modal-cancel-btn">
-          <i data-lucide="x" style="width:14px; height:14px;"></i> <span>Cancel Export</span>
+          <i class="ph-fill ph-x" style="font-size:14px;"></i> <span>Cancel Export</span>
         </button>
       </div>
     </div>
@@ -56,10 +175,10 @@
     <div class="export-modal-card skeu-raised" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; max-width: 540px; width: 90%; box-shadow: 0 24px 48px rgba(0,0,0,0.6); display: flex; flex-direction: column; gap: 16px; position: relative;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
         <span style="font-size: 1rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
-          <i data-lucide="shield-check" style="width: 20px; height: 20px; color: var(--accent-primary);"></i> Terms & Conditions — License
+          <i class="ph-fill ph-shield-check" style="font-size: 20px; color: var(--accent-primary);"></i> Terms & Conditions — License
         </span>
         <button id="terms-modal-close-btn" class="settings-close-btn" title="Close (Esc)">
-          <i data-lucide="x"></i>
+          <i class="ph-fill ph-x"></i>
         </button>
       </div>
 
@@ -90,15 +209,15 @@
       <div class="settings-page-header">
         <div class="settings-header-left">
           <div class="settings-header-icon-box">
-            <i data-lucide="settings" style="width:22px; height:22px;"></i>
+            <i class="ph-fill ph-gear" style="font-size:22px;"></i>
           </div>
           <div>
-            <h3 class="settings-page-title">My Gradial — Settings & Preferences</h3>
+            <h3 class="settings-page-title">My Gradial - Settings &amp; Preferences</h3>
             <p class="settings-page-subtext">Customize themes, audio feedback, rendering quality, export defaults, and application preferences.</p>
           </div>
         </div>
         <button id="close-settings-btn" class="settings-close-btn" title="Close Settings (Esc)">
-          <i data-lucide="x"></i>
+          <i class="ph-fill ph-x"></i>
         </button>
       </div>
 
@@ -108,19 +227,19 @@
         <!-- Sidebar Navigation -->
         <nav class="settings-nav-sidebar">
           <button class="settings-nav-item active" data-settings-section="themes">
-            <i data-lucide="palette"></i> Themes & Appearance
+            <i class="ph-fill ph-palette"></i> Themes & Appearance
           </button>
           <button class="settings-nav-item" data-settings-section="audio">
-            <i data-lucide="volume-2"></i> Audio & Sound Effects
+            <i class="ph-fill ph-speaker-high"></i> Audio & Sound Effects
           </button>
           <button class="settings-nav-item" data-settings-section="export">
-            <i data-lucide="film"></i> Video & Export Defaults
+            <i class="ph-fill ph-film-strip"></i> Video & Export Defaults
           </button>
           <button class="settings-nav-item" data-settings-section="shortcuts">
-            <i data-lucide="keyboard"></i> Hotkey Cheatsheet
+            <i class="ph-fill ph-keyboard"></i> Hotkey Cheatsheet
           </button>
           <button class="settings-nav-item" data-settings-section="info">
-            <i data-lucide="info"></i> App & System Specs
+            <i class="ph-fill ph-info"></i> App & System Specs
           </button>
         </nav>
 
@@ -132,7 +251,7 @@
             <!-- Standard Modern Themes -->
             <div>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                <i data-lucide="palette" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                <i class="ph-fill ph-palette" style="font-size: 16px; color: var(--accent-primary);"></i>
                 <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Standard & Modern Themes</h4>
               </div>
               <div class="theme-grid">
@@ -336,15 +455,25 @@
               </div>
             </div>
 
-            <!-- Retro & Special Themes Section (Unlocked & Unblurred) -->
+            <!-- Retro & Special Themes Section (Locked) -->
             <div style="margin-top: 20px; position: relative;">
               <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--accent-primary);"></i>
+                  <i class="ph-fill ph-sparkle" style="font-size: 16px; color: var(--accent-primary);"></i>
                   <h4 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-sub); margin: 0;">Special & Retro Aesthetics</h4>
                 </div>
+                <span style="font-size: 0.68rem; font-weight: 800; color: #FF4757; background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.3); border-radius: 20px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="ph-fill ph-lock-key" style="font-size: 11px;"></i> LOCKED
+                </span>
               </div>
-              <div class="theme-grid" style="filter: none; opacity: 1; pointer-events: auto; user-select: auto;">
+
+              <!-- Lock Overlay Box -->
+              <div style="position: absolute; top: calc(50% + 12px); left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 20, 18, 0.88); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 12px 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); pointer-events: auto; text-align: center;">
+                <i class="ph-fill ph-lock-key" style="font-size: 22px; color: #FF4757; margin-bottom: 4px;"></i>
+                <span style="font-size: 0.78rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px;">Special Themes Locked</span>
+              </div>
+
+              <div class="theme-grid" style="filter: blur(4px); opacity: 0.35; pointer-events: none; user-select: none;">
                 <!-- Frutiger Aero -->
                 <div class="theme-card skeu-inset special-theme-card" data-theme="theme-frutiger-aero" style="background: linear-gradient(180deg, #CBE5FF, #76B6FF); border: 2px solid rgba(255,255,255,0.9);">
                   <div class="theme-colors">
@@ -384,7 +513,7 @@
           <!-- Section 2: Audio & Sound Effects -->
           <div class="settings-section-panel hidden" id="settings-section-audio">
             <div class="settings-card-box">
-              <h4 class="settings-card-title"><i data-lucide="volume-2" style="width:18px; height:18px; color:var(--accent-primary);"></i> UI Sound Effects & Feedback</h4>
+              <h4 class="settings-card-title"><i class="ph-fill ph-speaker-high" style="font-size:18px; color:var(--accent-primary);"></i> UI Sound Effects & Feedback</h4>
               
               <div class="settings-row">
                 <div class="settings-row-info">
@@ -392,7 +521,7 @@
                   <span class="settings-desc">Synthesized Web Audio clicks, pops, and slider feedback tones.</span>
                 </div>
                 <button id="setting-sound-toggle" class="segmented-btn active" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
-                  <i data-lucide="volume-2"></i> <span id="setting-sound-text">Enabled</span>
+                  <i class="ph-fill ph-speaker-high"></i> <span id="setting-sound-text">Enabled</span>
                 </button>
               </div>
 
@@ -409,7 +538,7 @@
           <!-- Section 4: Video & Export Defaults -->
           <div class="settings-section-panel hidden" id="settings-section-export">
             <div class="settings-card-box">
-              <h4 class="settings-card-title"><i data-lucide="film" style="width:18px; height:18px; color:var(--accent-primary);"></i> Video Studio & Export Preferences</h4>
+              <h4 class="settings-card-title"><i class="ph-fill ph-film-strip" style="font-size:18px; color:var(--accent-primary);"></i> Video Studio & Export Preferences</h4>
               
               <div class="settings-row">
                 <div class="settings-row-info">
@@ -447,14 +576,14 @@
                   <span class="settings-desc">Export video/image with transparent background grid preserved.</span>
                 </div>
                 <button id="setting-export-alpha-toggle" class="segmented-btn" style="flex: 0 0 auto; padding: 6px 14px; border-radius: var(--radius-full);">
-                  <i data-lucide="layers"></i> <span id="setting-export-alpha-text">Disabled</span>
+                  <i class="ph-fill ph-stack"></i> <span id="setting-export-alpha-text">Disabled</span>
                 </button>
               </div>
             </div>
 
             <!-- Groq API Key Configuration -->
             <div class="settings-card-box" style="margin-top: 16px;">
-              <h4 class="settings-card-title"><i data-lucide="key" style="width:18px; height:18px; color:var(--accent-primary);"></i> Groq API Key (AI Subtitles)</h4>
+              <h4 class="settings-card-title"><i class="ph-fill ph-key" style="font-size:18px; color:var(--accent-primary);"></i> Groq API Key (AI Subtitles)</h4>
               <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
                 Enter your Groq API key (`gsk_...`) to enable speech-to-text AI subtitle generation for video clips.
               </p>
@@ -463,13 +592,13 @@
                 <div style="display: flex; gap: 8px; align-items: center;">
                   <input type="password" id="settings-groq-api-key-input" placeholder="gsk_..." class="sk-input" style="flex: 1; font-family: monospace; font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
                   <button class="btn-sk btn-secondary-sk" id="toggle-groq-key-vis-settings" title="Show/Hide Key" style="padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                    <i class="ph-fill ph-eye" style="font-size: 14px;"></i>
                   </button>
                 </div>
 
                 <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
                   <button class="btn-sk btn-primary-sk" id="check-groq-api-key-btn" style="padding: 6px 14px; font-size: 0.76rem; display: flex; align-items: center; gap: 6px;">
-                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Check API Key
+                    <i class="ph-fill ph-check-circle" style="font-size: 14px;"></i> Check API Key
                   </button>
                   <span id="settings-groq-key-status" style="font-size: 0.72rem; font-weight: 700; color: var(--text-sub); padding: 4px 10px; border-radius: 4px; background: var(--bg-recessed); border: 1px solid var(--border-subtle);">
                     Not Checked
@@ -479,7 +608,7 @@
                 <!-- Walkthrough Guide for Groq API Key & Whisper v3 Turbo -->
                 <div style="margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--bg-recessed); border: 1px solid var(--border-color);">
                   <div style="display: flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 8px;">
-                    <i data-lucide="help-circle" style="width: 14px; height: 14px;"></i> How to get a Groq API Key (Whisper Large v3 Turbo)
+                    <i class="ph-fill ph-question" style="font-size: 14px;"></i> How to get a Groq API Key (Whisper Large v3 Turbo)
                   </div>
                   
                   <ol style="margin: 0; padding-left: 18px; font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; line-height: 1.4;">
@@ -502,9 +631,9 @@
           <div class="settings-section-panel hidden" id="settings-section-shortcuts">
             <div class="settings-card-box">
               <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <h4 class="settings-card-title"><i data-lucide="keyboard" style="width:18px; height:18px; color:var(--accent-primary);"></i> Keyboard Shortcuts & Quick Actions</h4>
+                <h4 class="settings-card-title"><i class="ph-fill ph-keyboard" style="font-size:18px; color:var(--accent-primary);"></i> Keyboard Shortcuts & Quick Actions</h4>
                 <button id="copy-hotkeys-btn" class="btn-sk btn-secondary-sk" style="padding: 4px 10px; font-size: 0.72rem;">
-                  <i data-lucide="copy"></i> Copy Cheatsheet
+                  <i class="ph-fill ph-copy"></i> Copy Cheatsheet
                 </button>
               </div>
               
@@ -555,7 +684,7 @@
           <!-- Section 6: App & System Specs -->
           <div class="settings-section-panel hidden" id="settings-section-info">
             <div class="settings-card-box">
-              <h4 class="settings-card-title"><i data-lucide="info" style="width:18px; height:18px; color:var(--accent-primary);"></i> Application Specifications</h4>
+              <h4 class="settings-card-title"><i class="ph-fill ph-info" style="font-size:18px; color:var(--accent-primary);"></i> Application Specifications</h4>
               
               <div class="settings-row">
                 <div class="settings-row-info">
@@ -568,9 +697,9 @@
               <div class="settings-row">
                 <div class="settings-row-info">
                   <span class="settings-label">Icon Engine & Offline Suite</span>
-                  <span class="settings-desc">Bundled Lucide Vector Suite (100% offline)</span>
+                  <span class="settings-desc">Phosphor Icons Vector Suite (100% offline)</span>
                 </div>
-                <span style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Lucide v0.294</span>
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-main);">Phosphor v2.1.2</span>
               </div>
 
               <div class="settings-row">
@@ -596,7 +725,7 @@
       <div class="sidebar-header">
         <!-- Logo / Brand -->
         <div class="brand-row" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-          <div id="open-my-gradial-btn" style="display:flex; align-items:center; gap:12px; cursor:pointer;" title="My Gradial — settings, themes & adjustments">
+          <div id="open-my-gradial-btn" style="display:flex; align-items:center; gap:12px; cursor:pointer;" title="My Gradial &mdash; settings, themes & adjustments">
             <div class="brand-avatar-box">
               <svg class="brand-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -617,7 +746,7 @@
             </div>
             <span class="brand-title">Gradial</span>
           </div>
-          <button id="open-settings-btn" class="settings-icon-btn" title="Theme Settings"><i data-lucide="settings"></i></button>
+          <button id="open-settings-btn" class="settings-icon-btn" title="Theme Settings"><i class="ph-fill ph-gear" style="font-size: 18px;"></i></button>
         </div>
       </div>
 
@@ -626,13 +755,13 @@
         <!-- Sidebar Mode Pill Switcher -->
         <div class="tab-pill-container" style="margin-bottom: 12px;">
           <button class="tab-pill-btn active" id="tab-btn-image" data-tab="image">
-            <i data-lucide="image"></i> Image
+            <i class="ph-fill ph-image"></i> Image
           </button>
           <button class="tab-pill-btn" id="tab-btn-gradient" data-tab="gradient">
-            <i data-lucide="palette"></i> Gradient
+            <i class="ph-fill ph-palette"></i> Gradient
           </button>
           <button class="tab-pill-btn" id="tab-btn-video" data-tab="video">
-            <i data-lucide="video"></i> Video
+            <i class="ph-fill ph-video-camera"></i> Video
           </button>
         </div>
 
@@ -652,7 +781,7 @@
                 <span class="color-details-label">Selected Hex</span>
                 <span class="color-details-hex" id="target-color-hex">#FFFFFF</span>
               </div>
-              <i data-lucide="pipette" style="width: 16px; height: 16px; color: var(--accent-primary); opacity: 0.8;"></i>
+              <i class="ph-fill ph-eyedropper" style="font-size: 16px; color: var(--accent-primary); opacity: 0.8;"></i>
             </div>
           </div>
 
@@ -689,15 +818,15 @@
           <div class="section-block">
             <div class="section-header">
               <div class="section-indicator"></div>
-              <span class="section-title-text"><i data-lucide="wand-2" style="width:14px; height:14px; color:var(--accent-primary);"></i> Background Removal</span>
+              <span class="section-title-text"><i class="ph-fill ph-magic-wand" style="font-size:14px; color:var(--accent-primary);"></i> Background Removal</span>
             </div>
             
             <div style="display: flex; gap: 6px; margin-bottom: 8px;">
               <button class="btn-sk btn-primary-sk" id="ai-remove-bg-btn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 0.76rem; padding: 8px 6px;">
-                <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Remove BG
+                <i class="ph-fill ph-sparkle" style="font-size: 14px;"></i> Remove BG
               </button>
               <button class="btn-sk btn-secondary-sk" id="ai-dof-btn" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 800; font-size: 0.76rem; padding: 8px 6px;">
-                <i data-lucide="aperture" style="width: 14px; height: 14px;"></i> Depth of Field
+                <i class="ph-fill ph-aperture" style="font-size: 14px;"></i> Depth of Field
               </button>
             </div>
 
@@ -721,13 +850,13 @@
               <div class="slider-title" style="margin-bottom: 6px;">Backdrop Replacement</div>
               <div class="segmented-control">
                 <button class="segmented-btn active" id="bg-replace-transparent" data-bg="transparent">
-                  <i data-lucide="grid"></i> PNG Alpha
+                  <i class="ph-fill ph-grid-four"></i> PNG Alpha
                 </button>
                 <button class="segmented-btn" id="bg-replace-mesh" data-bg="mesh">
-                  <i data-lucide="palette"></i> Mesh
+                  <i class="ph-fill ph-palette"></i> Mesh
                 </button>
                 <button class="segmented-btn" id="bg-replace-solid" data-bg="solid">
-                  <i data-lucide="square"></i> Solid
+                  <i class="ph-fill ph-square"></i> Solid
                 </button>
               </div>
 
@@ -763,13 +892,13 @@
             
             <div class="segmented-control">
               <button class="segmented-btn active" id="eraser-mode-color" data-mode="color">
-                <i data-lucide="sparkles"></i> Color
+                <i class="ph-fill ph-sparkle"></i> Color
               </button>
               <button class="segmented-btn" id="eraser-mode-brush" data-mode="brush">
-                <i data-lucide="paintbrush"></i> Brush
+                <i class="ph-fill ph-paint-brush"></i> Brush
               </button>
               <button class="segmented-btn" id="eraser-mode-pan" data-mode="pan" title="Hold Spacebar to quickly pan">
-                <i data-lucide="move"></i> Pan
+                <i class="ph-fill ph-arrows-out-cardinal"></i> Pan
               </button>
             </div>
 
@@ -787,7 +916,7 @@
 
               <div class="segmented-control">
                 <button class="segmented-btn active" id="brush-action-erase" data-action="erase" style="width: 100%;">
-                  <i data-lucide="eraser"></i> Erase Brush
+                  <i class="ph-fill ph-eraser"></i> Erase Brush
                 </button>
               </div>
             </div>
@@ -798,7 +927,7 @@
           <div class="section-block">
             <div class="style-pad-wrapper">
               <div class="style-pad-header">
-                <span class="style-pad-title"><i data-lucide="sliders" style="width:14px; height:14px; color:var(--color-seaweed);"></i> Photographic Style</span>
+                <span class="style-pad-title"><i class="ph-fill ph-sliders" style="font-size:14px; color:var(--color-seaweed);"></i> Photographic Style</span>
               </div>
               <div class="style-pad-touch-area" id="img-style-pad-touch">
                 <span class="style-pad-axis-label axis-top">+ Contrast</span>
@@ -881,16 +1010,16 @@
             <div class="slider-container" style="margin-top: 8px;">
               <div class="slider-info-row">
                 <span class="slider-title">Hue Rotate</span>
-                <span class="slider-val-badge" id="filter-hue-val">0°</span>
+                <span class="slider-val-badge" id="filter-hue-val">0&deg;</span>
               </div>
               <input type="range" id="filter-hue" min="0" max="360" value="0">
             </div>
 
             <!-- Quick Effects -->
             <div class="segmented-control" style="margin-top: 12px;">
-              <button class="segmented-btn" id="filter-toggle-grayscale"><i data-lucide="circle-off"></i> Grayscale</button>
-              <button class="segmented-btn" id="filter-toggle-sepia"><i data-lucide="sun"></i> Sepia</button>
-              <button class="segmented-btn" id="filter-toggle-invert"><i data-lucide="contrast"></i> Invert</button>
+              <button class="segmented-btn" id="filter-toggle-grayscale"><i class="ph-fill ph-circle-slash"></i> Grayscale</button>
+              <button class="segmented-btn" id="filter-toggle-sepia"><i class="ph-fill ph-sun"></i> Sepia</button>
+              <button class="segmented-btn" id="filter-toggle-invert"><i class="ph-fill ph-circle-half"></i> Invert</button>
             </div>
           </div>
 
@@ -904,9 +1033,9 @@
               <span class="section-title-text">Transform</span>
             </div>
             <div class="segmented-control">
-              <button class="segmented-btn" id="image-rotate-btn"><i data-lucide="rotate-cw"></i> Rotate 90°</button>
-              <button class="segmented-btn" id="image-flip-h-btn"><i data-lucide="flip-horizontal-2"></i> Flip H</button>
-              <button class="segmented-btn" id="image-flip-v-btn"><i data-lucide="flip-vertical-2"></i> Flip V</button>
+              <button class="segmented-btn" id="image-rotate-btn"><i class="ph-fill ph-arrow-clockwise"></i> Rotate 90°</button>
+              <button class="segmented-btn" id="image-flip-h-btn"><i class="ph-fill ph-flip-horizontal"></i> Flip H</button>
+              <button class="segmented-btn" id="image-flip-v-btn"><i class="ph-fill ph-flip-vertical"></i> Flip V</button>
             </div>
           </div>
 
@@ -920,7 +1049,7 @@
           <!-- Sidebar Footer -->
           <div class="divider"></div>
           <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
-            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <span>&copy; 2026 RSA Engineering. All rights reserved.</span>
             <button class="open-terms-modal-btn terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
           </div>
         </div>
@@ -938,7 +1067,7 @@
             <div class="segmented-control" style="gap: 4px;">
               <button class="segmented-btn active" data-gmode="linear" style="flex: 1;">Linear</button>
               <button class="segmented-btn" data-gmode="positional" style="flex: 1;">Positional</button>
-              <button class="segmented-btn" data-gmode="animated" style="flex: 1;"><i data-lucide="play" style="width:13px; height:13px;"></i> Animated</button>
+              <button class="segmented-btn" data-gmode="animated" style="flex: 1;"><i class="ph-fill ph-play" style="font-size:13px;"></i> Animated</button>
             </div>
           </div>
 
@@ -977,7 +1106,7 @@
             </div>
             <div style="height: 10px;"></div>
             <button class="btn-sk btn-dashed-sk" id="add-color-stop-btn">
-              <i data-lucide="plus"></i> Add Color Stop
+              <i class="ph-fill ph-plus"></i> Add Color Stop
             </button>
           </div>
 
@@ -989,7 +1118,7 @@
                 <span class="section-title-text">Positional Control Points</span>
               </div>
               <button class="btn-sk btn-secondary-sk" id="add-positional-point-btn" style="padding: 4px 8px; font-size: 0.72rem;">
-                <i data-lucide="plus"></i> Add Point
+                <i class="ph-fill ph-plus"></i> Add Point
               </button>
             </div>
             <div id="positional-points-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
@@ -1020,7 +1149,7 @@
                 <div class="slider-container" style="flex: 1;">
                   <div class="slider-info-row" style="margin-bottom: 6px;">
                     <span class="slider-title" style="font-size: 0.72rem;">Sweep Angle</span>
-                    <span class="slider-val-badge" id="angle-val">90°</span>
+                    <span class="slider-val-badge" id="angle-val">90&deg;</span>
                   </div>
                   <input type="range" id="angle-slider" min="0" max="360" value="90" class="sk-slider">
                 </div>
@@ -1088,11 +1217,11 @@
             <div style="position: relative;" id="gradient-export-dropdown-anchor">
               <div style="display: flex; gap: 8px;">
                 <button class="btn-sk btn-primary-sk" id="gradient-export-main-btn" style="flex: 1;">
-                  <i data-lucide="download"></i>
+                  <i class="ph-fill ph-download-simple"></i>
                   <span>Export Gradient</span>
                 </button>
                 <button class="btn-sk btn-icon-sk" id="gradient-export-chevron-btn">
-                  <i data-lucide="chevron-down"></i>
+                  <i class="ph-fill ph-caret-down"></i>
                 </button>
               </div>
 
@@ -1106,7 +1235,7 @@
           <!-- Sidebar Footer -->
           <div class="divider"></div>
           <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
-            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <span>&copy; 2026 RSA Engineering. All rights reserved.</span>
             <button id="open-terms-modal-btn" class="terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
           </div>
         </div>
@@ -1122,38 +1251,24 @@
             <div style="display:flex; flex-direction:column; gap:10px;">
               <input type="file" accept="video/*" id="video-file-input" class="hidden">
               <button class="btn-sk btn-primary-sk" id="video-upload-btn">
-                <i data-lucide="upload-cloud"></i> Upload Video File
+                <i class="ph-fill ph-upload-simple"></i> Upload Video File
               </button>
               <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;" id="video-file-name">No video file loaded</div>
             </div>
           </div>
 
           <!-- AI Audio Transcription & Subtitles Block -->
-          <div class="section-block" id="video-transcribe-block">
+          <div class="section-block" id="video-transcribe-block-old">
             <div class="section-header">
               <div class="section-indicator" style="background: var(--accent-primary); box-shadow: 0 0 8px var(--accent-primary);"></div>
-              <span class="section-title-text"><i data-lucide="sparkles" style="width:14px; height:14px; color:var(--accent-primary);"></i> AI Subtitles</span>
+              <span class="section-title-text"><i class="ph-fill ph-sparkle" style="font-size:14px; color:var(--accent-primary);"></i> AI Subtitles</span>
             </div>
             
             <div style="display:flex; flex-direction:column; gap:10px;">
-              <!-- API Key Status / Notice -->
-              <div id="video-api-key-status-box" style="padding: 8px 10px; border-radius: 6px; background: var(--bg-recessed); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 6px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; font-weight: 700;">
-                  <span style="color: var(--text-sub);">Groq API Key:</span>
-                  <span id="video-key-status-badge" style="color: var(--accent-primary); font-size: 0.68rem; font-weight: 700;">No API Key</span>
-                </div>
-                <div id="video-key-notice-text" style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.3;">
-                  No API key inserted for subtitle generation. Please configure your Groq API key in Settings.
-                </div>
-                <button class="btn-sk btn-secondary-sk btn-xs-compact" id="btn-open-settings-api-key" style="margin-top: 2px; font-size: 0.7rem; justify-content: center; width: 100%;">
-                  <i data-lucide="settings" style="width:12px; height:12px;"></i> Open API Settings
-                </button>
-              </div>
-
               <!-- Language & Transliteration Settings -->
               <div>
                 <div style="font-size:0.72rem; font-weight:700; color:var(--text-sub); margin-bottom:4px;">Transcription Mode:</div>
-                <select id="transcribe-language-mode" class="sk-select" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); font-size:0.75rem; font-weight:600;">
+                <select id="transcribe-language-mode-old" class="sk-select" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); font-size:0.75rem; font-weight:600;">
                   <option value="hinglish_roman" selected>Hinglish</option>
                   <option value="en">English</option>
                   <option value="hi">Hindi</option>
@@ -1161,18 +1276,18 @@
               </div>
 
               <!-- Generate Subtitles Button -->
-              <button class="btn-sk btn-primary-sk" id="btn-generate-subtitles" style="width:100%; margin-top:2px;">
-                <i data-lucide="sparkles"></i> Generate AI Subtitles
+              <button class="btn-sk btn-primary-sk" id="btn-generate-subtitles-old" style="width:100%; margin-top:2px;">
+                <i class="ph-fill ph-sparkle"></i> Caption
               </button>
 
               <!-- Progress Track -->
-              <div id="subtitles-progress-container" class="hidden" style="margin-top:6px;">
+              <div id="subtitles-progress-container-old" class="hidden" style="margin-top:6px;">
                 <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">
-                  <span id="subtitles-progress-text">Extracting Audio...</span>
-                  <span id="subtitles-progress-pct">0%</span>
+                  <span id="subtitles-progress-text-old">Extracting Audio...</span>
+                  <span id="subtitles-progress-pct-old">0%</span>
                 </div>
                 <div class="ai-progress-track" style="height:6px; border-radius:3px; background:var(--bg-recessed); overflow:hidden;">
-                  <div id="subtitles-progress-bar" class="ai-progress-fill" style="width:0%; height:100%; background:linear-gradient(90deg, var(--accent-primary), #55FF00); transition:width 0.2s;"></div>
+                  <div id="subtitles-progress-bar-old" class="ai-progress-fill" style="width:0%; height:100%; background:linear-gradient(90deg, var(--accent-primary), #55FF00); transition:width 0.2s;"></div>
                 </div>
               </div>
 
@@ -1211,10 +1326,10 @@
                 <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
                   <div style="display:flex; gap:6px;">
                     <button class="btn-sk btn-secondary-sk" id="btn-download-vtt" style="flex:1; font-size:0.7rem; padding:4px 6px;">
-                      <i data-lucide="file-text"></i> Export .VTT
+                      <i class="ph-fill ph-file-text"></i> Export .VTT
                     </button>
                     <button class="btn-sk btn-secondary-sk" id="btn-download-srt" style="flex:1; font-size:0.7rem; padding:4px 6px;">
-                      <i data-lucide="file-text"></i> Export .SRT
+                      <i class="ph-fill ph-file-text"></i> Export .SRT
                     </button>
                   </div>
                   <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.72rem;">
@@ -1261,7 +1376,7 @@
               <div>
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:600; margin-bottom:4px;">
                   <span>Hue Rotate</span>
-                  <span id="vid-hue-val" style="color:var(--accent-primary);">0°</span>
+                  <span id="vid-hue-val" style="color:var(--accent-primary);">0&deg;</span>
                 </div>
                 <input type="range" id="vid-hue" min="-180" max="180" value="0">
               </div>
@@ -1275,7 +1390,7 @@
               <div class="section-indicator"></div>
               <span class="section-title-text">Cinematic 3D LUT</span>
             </div>
-            <div id="vid-lut-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;"></div>
+            <div id="legacy-vid-lut-grid" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;"></div>
           </div>
 
           <!-- Video Resize & Resolution -->
@@ -1293,14 +1408,14 @@
 
           <div style="margin-top:12px;">
             <button class="btn-sk btn-primary-sk" id="video-export-btn" style="width:100%;">
-              <i data-lucide="download"></i> Export Graded Video
+              <i class="ph-fill ph-download-simple"></i> Export Graded Video
             </button>
           </div>
 
           <!-- Sidebar Footer -->
           <div class="divider"></div>
           <div class="sidebar-footer-block" style="padding: 12px 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
-            <span>© 2026 RSA Engineering. All rights reserved.</span>
+            <span>&copy; 2026 RSA Engineering. All rights reserved.</span>
             <button class="open-terms-modal-btn terms-link-btn" style="background: none; border: none; color: var(--accent-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 2px 4px;">Terms & Conditions</button>
           </div>
         </div>
@@ -1318,18 +1433,18 @@
         <div class="panel-sk" style="flex: 1; min-height: 0;">
           <div class="panel-header-sk">
             <div class="panel-title-sk">
-              <i data-lucide="image"></i> Source Image
+              <i class="ph-fill ph-image"></i> Source Image
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
               <button class="btn-sk btn-secondary-sk btn-xs-compact" id="image-undo-btn" title="Undo (Ctrl+Z)" disabled>
-                <i data-lucide="undo-2" style="width:14px; height:14px;"></i> Undo
+                <i class="ph-fill ph-arrow-u-up-left" style="font-size:14px;"></i> Undo
               </button>
               <button class="btn-sk btn-secondary-sk btn-xs-compact" id="image-redo-btn" title="Redo (Ctrl+Y)" disabled>
-                <i data-lucide="redo-2" style="width:14px; height:14px;"></i> Redo
+                <i class="ph-fill ph-arrow-u-up-right" style="font-size:14px;"></i> Redo
               </button>
               <input type="file" accept="image/*" id="file-input-element" class="hidden">
               <label for="file-input-element" class="btn-sk btn-secondary-sk" style="padding: 6px 12px; font-size: 0.75rem;">
-                <i data-lucide="upload-cloud"></i>
+                <i class="ph-fill ph-upload-simple"></i>
                 <span id="upload-label-text">Upload Image</span>
               </label>
             </div>
@@ -1338,7 +1453,7 @@
           <div class="panel-body-sk checkerboard-bg" id="source-panel-body">
             <div class="upload-placeholder-box" id="upload-placeholder">
               <div class="upload-icon-circle">
-                <i data-lucide="image" style="width: 28px; height: 28px; color: var(--color-muted-teal);"></i>
+                <i class="ph-fill ph-image" style="font-size: 28px; color: var(--color-muted-teal);"></i>
               </div>
               <span style="font-size: 0.85rem; font-weight: 500;">Select an image to start editing</span>
             </div>
@@ -1354,10 +1469,10 @@
         <div class="panel-sk" style="flex: 1; min-height: 0;">
           <div class="panel-header-sk">
             <div class="panel-title-sk" style="color: var(--color-seaweed);">
-              <i data-lucide="layers"></i> Preview Result
+              <i class="ph-fill ph-stack"></i> Preview Result
             </div>
             <div id="processing-spinner" class="hidden" style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--color-muted-teal);">
-              <i data-lucide="loader-2" class="animate-spin" style="width: 14px; height: 14px;"></i> Processing...
+              <i class="ph-fill ph-spinner animate-spin" style="font-size: 14px;"></i> Processing...
             </div>
           </div>
 
@@ -1381,7 +1496,7 @@
         <div id="media-timeline-container" class="gradient-bottom-timeline hidden">
           <div class="media-player-card">
             <div class="media-player-display">
-              <span class="media-title" id="timeline-title-display"><i data-lucide="play-circle"></i> Timeline</span>
+              <span class="media-title" id="timeline-title-display"><i class="ph-fill ph-play-circle"></i> Timeline</span>
               <div style="display:flex; align-items:center; gap:12px;">
                 <span class="slider-title" style="font-size:0.68rem;">Cycle Duration</span>
                 <input type="range" id="animation-duration-slider" min="1" max="20" step="0.5" value="5" style="width:90px;">
@@ -1391,9 +1506,9 @@
             </div>
 
             <div class="timeline-middle-row" style="gap: 24px;">
-              <button class="media-btn-round" id="btn-media-prev" title="Previous Keyframe"><i data-lucide="skip-back"></i></button>
-              <button class="media-btn-round play-primary" id="btn-media-play" title="Play / Pause"><i data-lucide="play" id="play-icon"></i></button>
-              <button class="media-btn-round" id="btn-media-next" title="Next Keyframe"><i data-lucide="skip-forward"></i></button>
+              <button class="media-btn-round" id="btn-media-prev" title="Previous Keyframe"><i class="ph-fill ph-skip-back"></i></button>
+              <button class="media-btn-round play-primary" id="btn-media-play" title="Play / Pause"><i class="ph-fill ph-play" id="play-icon"></i></button>
+              <button class="media-btn-round" id="btn-media-next" title="Next Keyframe"><i class="ph-fill ph-skip-forward"></i></button>
 
               <div class="timeline-track-container" id="timeline-track-wrap" style="flex:1;">
                 <div class="timeline-bar-bg"></div>
@@ -1406,7 +1521,7 @@
               </div>
 
               <button class="btn-sk btn-primary-sk btn-xs-compact" id="add-keyframe-current-btn" title="Add Keyframe at current time">
-                <i data-lucide="plus" style="width:14px; height:14px;"></i> <span>Keyframe</span>
+                <i class="ph-fill ph-plus" style="font-size:14px;"></i> <span>Keyframe</span>
               </button>
             </div>
 
@@ -1419,66 +1534,499 @@
         </div>
       </div>
 
-      <!-- ================= VIDEO WORKSPACE ================= -->
-      <div id="workspace-video-layout" class="workspace-layout hidden">
-        <div class="gradient-preview-viewport" id="video-preview-viewport" style="flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg-recessed); padding:20px; position:relative; overflow:hidden;">
-          
-          <!-- Video Canvas / Player Container -->
-          <div id="video-canvas-container" style="position:relative; max-width:100%; max-height:calc(100% - 60px); display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-            <video id="video-player-el" class="hidden" style="max-width:100%; max-height:100%; border-radius:var(--radius-md); display:block;"></video>
-            <!-- Live Synchronized Subtitle Overlay -->
-            <div id="video-subtitle-overlay" class="hidden" style="position:absolute; bottom:10%; left:50%; transform:translateX(-50%); width:90%; text-align:center; pointer-events:none; z-index:20; transition:all 0.15s ease;">
-              <span id="video-subtitle-text" style="display:inline-block; font-family:var(--font-heading); font-size:22px; font-weight:800; color:#FFFF00; background:rgba(0,0,0,0.85); padding:6px 14px; border-radius:6px; text-shadow:0 2px 8px rgba(0,0,0,0.9); max-width:100%; word-wrap:break-word; line-height:1.3;"></span>
-            </div>
-          </div>
-
-          <!-- Video Playback Transport Controls Bar (3D Skeuomorphic Deck) -->
-          <div id="video-controls-bar" class="hidden skeu-media-deck">
-            <button id="btn-vid-play-pause" class="skeu-deck-btn play-btn" title="Play / Pause">
-              <i data-lucide="play" style="width:16px; height:16px;"></i>
-            </button>
-            
-            <button id="btn-vid-rewind" class="skeu-deck-btn seek-btn" title="Rewind 10s">
-              <i data-lucide="rotate-ccw" style="width:13px; height:13px;"></i> -10s
-            </button>
-
-            <button id="btn-vid-forward" class="skeu-deck-btn seek-btn" title="Forward 10s">
-              <i data-lucide="rotate-cw" style="width:13px; height:13px;"></i> +10s
-            </button>
-
-            <div id="vid-timecode-display" class="skeu-lcd-display">
-              00:00 / 00:00
-            </div>
-            
-            <!-- Smooth 3D Beveled Seek Track -->
-            <div id="vid-seek-track-container" class="skeu-seek-track-wrap">
-              <div class="skeu-seek-track-bg">
-                <div id="vid-seek-buffer-bar" class="skeu-buffer-bar"></div>
-                <div id="vid-seek-progress-fill" class="skeu-progress-fill"></div>
+      <!-- ================= VIDEO WORKSPACE (GRADIAL VIDEO STUDIO) ================= -->
+      <div id="workspace-video-layout" class="workspace-layout studio-root hidden">
+        
+        <!-- TOP CHROME HEADER -->
+        <div class="studio-top-chrome">
+          <div class="brand-row" style="margin-bottom:0; flex:1; display:flex; align-items:center;">
+            <div id="studio-brand-home-btn" style="display:flex; align-items:center; gap:12px; cursor:pointer;" title="Gradial Studio">
+              <div class="brand-avatar-box">
+                <svg class="brand-logo-svg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="gradialLogoGradStudio" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="var(--accent-secondary)"/>
+                      <stop offset="100%" stop-color="var(--accent-primary)"/>
+                    </linearGradient>
+                    <filter id="gradialGlowStudio" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="1.5" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                  </defs>
+                  <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#gradialLogoGradStudio)" opacity="0.18" stroke="var(--border-color)" stroke-width="1.2"/>
+                  <path d="M 27 13.5 C 23.5 10 16.5 10 12.5 14 C 8.5 18 8.5 24.5 12.5 28.5 C 16.5 32.5 24 32.5 27.5 27.5 C 29.5 24.5 29.5 21 29.5 21 L 19.5 21 L 19.5 25 L 25.2 25 C 24.2 27.2 20.8 28.5 17 26.5 C 13.2 24.5 13.2 17.5 17 15.5 C 19.5 14.2 23.2 15 24.8 16.8 L 27.8 13.8 Z" 
+                        fill="url(#gradialLogoGradStudio)" filter="url(#gradialGlowStudio)"/>
+                  <circle cx="19.5" cy="21" r="2.2" fill="var(--accent-primary)"/>
+                </svg>
               </div>
-              <div id="vid-seek-handle" class="skeu-seek-knob"></div>
-            </div>
-
-            <!-- 3D Volume Section -->
-            <div class="skeu-volume-wrap">
-              <i data-lucide="volume-2" class="skeu-volume-icon"></i>
-              <input type="range" id="vid-volume-slider" min="0" max="100" value="100" class="skeu-vol-slider">
+              <span class="brand-title">Gradial</span>
             </div>
           </div>
+          
+          <div class="tab-pill-container" id="studio-top-pills">
+            <button class="tab-pill-btn" id="studio-tab-btn-image" data-tab="image">
+              <i class="ph-fill ph-image"></i> Image
+            </button>
+            <button class="tab-pill-btn" id="studio-tab-btn-gradient" data-tab="gradient">
+              <i class="ph-fill ph-palette"></i> Gradient
+            </button>
+            <button class="tab-pill-btn active" id="studio-tab-btn-video" data-tab="video">
+              <i class="ph-fill ph-video-camera"></i> Video
+            </button>
+          </div>
 
-          <div id="video-empty-state" style="text-align:center; padding:60px 40px; max-width:480px;">
-            <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--accent-primary), var(--accent-secondary, var(--color-stormy-teal))); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-              <i data-lucide="film" style="width:36px; height:36px; color:#fff;"></i>
-            </div>
-            <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-bottom:12px; letter-spacing:-0.02em;">Video Studio Workspace</h2>
-            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.6;">Upload a video file to generate AI Hinglish subtitles, apply 3D color grading LUTs, and burn captions live.</p>
+          <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:8px;">
+            <button id="studio-top-export-btn" class="btn-sk btn-primary-sk btn-xs-compact" style="font-weight: 800; padding: 6px 14px; display: flex; align-items: center; gap: 6px; font-size: 0.78rem;" title="Export Studio Video">
+              <i class="ph-fill ph-download-simple" style="font-size: 14px;"></i> Export Video
+            </button>
+            <button id="studio-open-settings-btn" class="settings-icon-btn" title="Theme Settings">
+              <i class="ph-fill ph-gear"></i>
+            </button>
           </div>
         </div>
-      </div>
+
+        <div class="studio-body-layout">
+
+        <!-- 1. LOADING OVERLAY -->
+        <div id="video-studio-loading-overlay" class="video-studio-loader hidden">
+          <div class="studio-loader-card">
+            <div class="studio-loader-spinner-wrap">
+              <div class="studio-loader-ring"></div>
+              <i class="ph-fill ph-film-strip studio-loader-icon" style="font-size: 32px;"></i>
+            </div>
+            <div class="studio-loader-title">GRADIAL VIDEO STUDIO</div>
+            <div class="studio-loader-status" id="studio-loader-status-text">Initializing Studio Engine &amp; GPU Pipeline...</div>
+            <div class="studio-loader-bar-track">
+              <div class="studio-loader-bar-fill" id="studio-loader-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. SIDEBAR GLASS PANEL -->
+        <div id="video-studio-body" class="glass-panel studio-sidebar">
+          
+          <!-- ICON RAIL NAVIGATION -->
+          <div id="video-studio-rail">
+            <div class="rail-item active" id="btn-rail-captions" data-rail-target="captions" title="AI Subtitles">
+              <i class="ph-fill ph-subtitles"></i>
+              <span>Captions</span>
+            </div>
+            <div class="rail-item" id="btn-rail-text" data-rail-target="text" title="Text & Fonts">
+              <i class="ph-fill ph-text-t"></i>
+              <span>Fonts</span>
+            </div>
+            <div class="rail-item" id="btn-rail-templates" data-rail-target="templates" title="Templates">
+              <i class="ph-fill ph-paint-brush"></i>
+              <span>Templates</span>
+            </div>
+            <div class="rail-item" id="btn-rail-color" data-rail-target="color" title="Color Grading">
+              <i class="ph-fill ph-sliders"></i>
+              <span>Color</span>
+            </div>
+          </div>
+
+          <!-- INSPECTOR DRAWER -->
+          <div id="video-studio-drawer">
+            
+            <!-- TAB: CAPTIONS -->
+            <div id="drawer-tab-captions" class="drawer-tab-content">
+              <div class="drawer-header">
+                <span>AI Subtitles</span>
+                <button class="btn-sk btn-secondary-sk btn-xs-compact" id="btn-add-caption-segment">
+                  <i class="ph-fill ph-plus"></i> Segment
+                </button>
+              </div>
+              <div class="vs-drawer-scroll">
+                
+                <!-- AI Subtitles Rich Card -->
+                <div class="ai-subtitles-card">
+                  <div class="ai-subtitles-header">
+                    <i class="ph-fill ph-sparkle ai-subtitles-icon" style="font-size:16px; color:var(--accent-primary);"></i>
+                    <span style="font-weight:700; color:var(--text-white); font-size:0.85rem;">AI Subtitles</span>
+                  </div>
+                  <p class="ai-subtitles-copy">
+                    Generate word-accurate captions straight from your audio track in English or Hinglish.
+                  </p>
+                  <div class="vs-control-group" style="margin-bottom: 12px;">
+                    <label class="vs-label">Language Model</label>
+                    <select id="transcribe-language-mode" class="sk-select vs-select">
+                      <option value="hinglish_roman">Hinglish / English (Roman)</option>
+                      <option value="english_only">English Only</option>
+                      <option value="auto_detect">Auto-Detect</option>
+                    </select>
+                  </div>
+                  <button class="btn-sk btn-primary-sk vs-action-btn ai-subtitles-generate-btn" id="btn-generate-ai-captions" style="width:100%; padding:8px 12px; border-radius:8px; font-weight:700; font-size:0.8rem; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:none;">
+                    <i class="ph-fill ph-magic-wand" style="font-size:14px;"></i> Generate Captions
+                  </button>
+                  <div id="subtitles-progress-container" class="hidden" style="margin-top:10px;">
+                    <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-main); margin-bottom:4px;">
+                      <span id="subtitles-progress-text">Transcribing Audio...</span>
+                      <span id="subtitles-progress-pct">0%</span>
+                    </div>
+                    <div class="ai-progress-track">
+                      <div id="subtitles-progress-fill" class="ai-progress-fill" style="width:0%;"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="vs-card" style="margin-top: 14px;">
+                  <div class="vs-card-title">
+                    <span><span class="vs-bar"></span>CAPTIONS LIST</span>
+                    <button class="vs-link-btn" id="btn-clear-all-captions"><i class="ph-fill ph-trash" style="font-size:11px;"></i> Clear</button>
+                  </div>
+                  <div class="vs-control-group">
+                    <input type="text" id="vs-caption-search-input" placeholder="Search captions..." class="sk-input vs-input" style="font-size:0.75rem; padding:6px 10px;">
+                  </div>
+                  <div id="pro-captions-list-scroll" class="vs-caption-scroll">
+                    <div id="pro-captions-empty-notice" class="vs-empty-notice">
+                      <i class="ph-fill ph-sparkle" style="font-size:24px; color:var(--accent-primary);"></i>
+                      <span>No captions yet</span>
+                      <span class="vs-empty-hint">Click "Generate Captions" above</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- TAB: TEXT & FONTS -->
+            <div id="drawer-tab-text" class="drawer-tab-content hidden">
+              <div class="drawer-header"><span>Text Styling &amp; Fonts</span></div>
+              <div class="vs-drawer-scroll">
+                
+                <!-- Styling Target Scope Bar -->
+                <div class="vs-scope-toggle-bar">
+                  <button class="vs-scope-btn active" id="btn-scope-all" data-scope="global" title="Apply font changes to all subtitles">
+                    <i class="ph-fill ph-globe-hemisphere-west" style="font-size:13px;"></i> All Subtitles
+                  </button>
+                  <button class="vs-scope-btn" id="btn-scope-selected" data-scope="selected" title="Apply font changes only to the selected subtitle">
+                    <i class="ph-fill ph-cursor-click" style="font-size:13px;"></i> Selected Subtitle
+                  </button>
+                </div>
+
+                <!-- Font Settings -->
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>TYPOGRAPHY</span></div>
+                  
+                  <div class="vs-control-group">
+                    <label class="vs-label">Font Family</label>
+                    <select id="pro-style-font-family" class="sk-select vs-select">
+                      <option value="Outfit" selected>Outfit (Modern Bold)</option>
+                      <option value="Inter">Inter (Clean UI)</option>
+                      <option value="Plus Jakarta Sans">Plus Jakarta Sans (Luxe)</option>
+                      <option value="JetBrains Mono">JetBrains Mono (Console Code)</option>
+                      <option value="Impact">Impact (Heavy Viral)</option>
+                      <option value="Montserrat">Montserrat (Geometric)</option>
+                      <option value="Poppins">Poppins (Soft Sans)</option>
+                      <option value="Oswald">Oswald (Tall Condensed)</option>
+                      <option value="Playfair Display">Playfair Display (Editorial Serif)</option>
+                      <option value="Space Grotesk">Space Grotesk (Tech Modern)</option>
+                      <option value="Cinzel">Cinzel (Cinematic Serif)</option>
+                      <option value="Anton">Anton (Tall Impact)</option>
+                      <option value="Bebas Neue">Bebas Neue (Condensed)</option>
+                    </select>
+                  </div>
+
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Font Size</label>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <div class="vs-num-input-wrap">
+                          <input type="number" id="pro-style-font-size-num" min="12" max="120" value="24" class="vs-num-input">
+                          <span class="vs-unit">px</span>
+                        </div>
+                        <button id="btn-reset-font-size" class="vs-link-btn" title="Reset Font Size (24px)"><i class="ph-fill ph-arrow-counter-clockwise" style="font-size:11px;"></i></button>
+                      </div>
+                    </div>
+                    <input type="range" id="pro-style-font-size-slider" class="sk-slider" min="12" max="120" value="24">
+                  </div>
+
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Letter Spacing</label>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <span id="pro-style-letter-spacing-val" class="vs-val-badge">0px</span>
+                        <button id="btn-reset-letter-spacing" class="vs-link-btn" title="Reset Letter Spacing (0px)"><i class="ph-fill ph-arrow-counter-clockwise" style="font-size:11px;"></i></button>
+                      </div>
+                    </div>
+                    <input type="range" id="pro-style-letter-spacing" class="sk-slider" min="0" max="12" value="0" step="0.5">
+                  </div>
+
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Line Height</label>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <span id="pro-style-line-height-val" class="vs-val-badge">1.2</span>
+                        <button id="btn-reset-line-height" class="vs-link-btn" title="Reset Line Height (1.2)"><i class="ph-fill ph-arrow-counter-clockwise" style="font-size:11px;"></i></button>
+                      </div>
+                    </div>
+                    <input type="range" id="pro-style-line-height" class="sk-slider" min="0.8" max="2.2" value="1.2" step="0.1">
+                  </div>
+                </div>
+
+                <!-- Text Format -->
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>FORMAT &amp; CASE</span></div>
+                  <div class="vs-btn-row">
+                    <button class="vs-toggle-btn active" id="pro-btn-bold" title="Bold"><i class="ph-fill ph-text-b" style="font-size:14px;"></i></button>
+                    <button class="vs-toggle-btn" id="pro-btn-italic" title="Italic"><i class="ph-fill ph-text-italic" style="font-size:14px;"></i></button>
+                    <button class="vs-toggle-btn" id="pro-btn-underline" title="Underline"><i class="ph-fill ph-text-underline" style="font-size:14px;"></i></button>
+                  </div>
+                  <div class="vs-control-group" style="margin-top: 10px;">
+                    <label class="vs-label">Text Transform</label>
+                    <select id="pro-style-text-case" class="sk-select vs-select">
+                      <option value="none" selected>None</option>
+                      <option value="uppercase">UPPERCASE</option>
+                      <option value="lowercase">lowercase</option>
+                      <option value="capitalize">Capitalize</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Text Color -->
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>TEXT COLOR</span></div>
+                  <div class="segmented-control" style="margin-bottom: 12px;">
+                    <button class="segmented-btn active" id="pro-color-mode-solid" data-mode="solid">Solid</button>
+                    <button class="segmented-btn" id="pro-color-mode-gradient" data-mode="gradient">Gradient</button>
+                  </div>
+
+                  <!-- Solid Color Panel -->
+                  <div id="pro-color-solid-panel">
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-recessed); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-sub);">Solid Color</span>
+                      <div class="color-picker-wrap custom-cp-trigger" id="pro-style-color-trigger" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <input type="color" id="pro-style-solid-color-picker" value="#FFFFFF" style="opacity:0; position:absolute; width:1px; height:1px; pointer-events:none;">
+                        <div class="color-picker-swatch" id="pro-style-color-swatch" style="background-color: #FFFFFF; width: 26px; height: 26px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.4);"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Gradient Color Panel -->
+                  <div id="pro-color-gradient-panel" style="display: none; flex-direction: column; gap: 10px; margin-top: 6px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-recessed); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-sub);">Gradient Stop 1</span>
+                      <input type="color" id="pro-grad-stop-1" value="#00FF88" style="background:none; border:none; width:30px; height:28px; cursor:pointer;">
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-recessed); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-subtle);">
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-sub);">Gradient Stop 2</span>
+                      <input type="color" id="pro-grad-stop-2" value="#00E5FF" style="background:none; border:none; width:30px; height:28px; cursor:pointer;">
+                    </div>
+                    <div class="vs-control-group">
+                      <div class="vs-slider-header">
+                        <label class="vs-label">Gradient Angle</label>
+                        <span id="gradient-angle-val" class="vs-val-badge">90&deg;</span>
+                      </div>
+                      <input type="range" id="pro-style-gradient-angle" class="sk-slider" min="0" max="360" value="90">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- TAB: TEMPLATES -->
+            <div id="drawer-tab-templates" class="drawer-tab-content hidden">
+              <div class="drawer-header"><span>Templates &amp; Transitions</span></div>
+              <div class="vs-drawer-scroll">
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>CAPTION TEMPLATES</span> <span class="vs-badge">5</span></div>
+                  <div id="vs-templates-grid" class="vs-templates-grid"></div>
+                </div>
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>TRANSITIONS</span> <span class="vs-badge">4</span></div>
+                  <div id="vs-transitions-list" class="vs-transitions-list"></div>
+                </div>
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>TRANSITION SETTINGS</span></div>
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Duration</label>
+                      <span id="vs-trans-duration-val" class="vs-val-badge">0.3s</span>
+                    </div>
+                    <input type="range" id="vs-trans-duration-slider" class="sk-slider" min="0.1" max="1.5" step="0.05" value="0.3">
+                  </div>
+                  <div class="vs-control-group" style="margin-top: 10px;">
+                    <label class="vs-label">Easing</label>
+                    <select id="vs-trans-easing-select" class="sk-select vs-select">
+                      <option value="easeOut" selected>Ease Out</option>
+                      <option value="easeInOut">Ease In Out</option>
+                      <option value="linear">Linear</option>
+                      <option value="spring">Spring Recoil</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: COLOR GRADINGS -->
+            <div id="drawer-tab-color" class="drawer-tab-content hidden">
+              <div class="drawer-header"><span>Color Grading &amp; 3D LUTs</span></div>
+              <div class="vs-drawer-scroll">
+                <div class="vs-card">
+                  <div class="vs-card-title"><span><span class="vs-bar"></span>CINEMATIC 3D LUT</span></div>
+                  <div id="vid-lut-grid" class="lut-grid-3d"></div>
+                </div>
+                
+                <div class="vs-card">
+                  <div class="vs-card-title">
+                    <span><span class="vs-bar"></span>ADJUSTMENTS</span>
+                    <button class="vs-link-btn" id="btn-reset-video-grading"><i class="ph-fill ph-arrow-counter-clockwise" style="font-size:10px;"></i> Reset</button>
+                  </div>
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Exposure</label>
+                      <span id="vid-brightness-val" class="vs-val-badge">0%</span>
+                    </div>
+                    <input type="range" id="vid-brightness-slider" class="sk-slider" min="-50" max="50" value="0">
+                  </div>
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Contrast</label>
+                      <span id="vid-contrast-val" class="vs-val-badge">0%</span>
+                    </div>
+                    <input type="range" id="vid-contrast-slider" class="sk-slider" min="-50" max="50" value="0">
+                  </div>
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Saturation</label>
+                      <span id="vid-saturate-val" class="vs-val-badge">0%</span>
+                    </div>
+                    <input type="range" id="vid-saturate-slider" class="sk-slider" min="-50" max="50" value="0">
+                  </div>
+                  <div class="vs-control-group">
+                    <div class="vs-slider-header">
+                      <label class="vs-label">Temperature</label>
+                      <span id="vid-temp-val" class="vs-val-badge">0</span>
+                    </div>
+                    <input type="range" id="vid-temp-slider" class="sk-slider" min="-50" max="50" value="0">
+                  </div>
+                </div>
+
+                <div class="vs-card">
+                  <div class="vs-card-title">
+                    <span><span class="vs-bar"></span>TONE &amp; WARMTH</span>
+                    <button class="vs-link-btn" id="btn-reset-tone-warmth"><i class="ph-fill ph-arrow-counter-clockwise" style="font-size:10px;"></i> Reset</button>
+                  </div>
+                  <div class="style-pad-wrapper" style="margin-top: 6px;">
+                    <div class="style-pad-touch-area" id="vid-style-pad-touch">
+                      <span class="style-pad-axis-label axis-top">+ Tone</span>
+                      <span class="style-pad-axis-label axis-bottom">- Tone</span>
+                      <span class="style-pad-axis-label axis-left">Cool</span>
+                      <span class="style-pad-axis-label axis-right">Warm</span>
+                      
+                      <div class="style-pad-crosshair-h"></div>
+                      <div class="style-pad-crosshair-v"></div>
+
+                      <div class="style-pad-grid-dots" id="vid-style-pad-dots"></div>
+
+                      <div class="style-pad-glow" id="vid-style-pad-glow"></div>
+                      <div class="style-pad-puck" id="vid-style-pad-puck"></div>
+                    </div>
+                  </div>
+                  <div id="vid-style-pad-readout" class="vs-pad-readout" style="margin-top: 6px; text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--text-sub);">Tone: 0 | Warmth: 0</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- END video-studio-drawer -->
+
+        </div><!-- END studio-sidebar -->
+
+        <!-- 3. CENTER STAGE (FLOATING GLASS PANELS) -->
+        <div class="studio-center">
+          
+          <!-- PREVIEW GLASS PANEL -->
+          <div class="glass-panel studio-preview">
+            <div id="video-canvas-stage">
+              <video id="video-player-el" class="hidden" playsinline></video>
+              <div id="pro-canvas-overlay" class="hidden">
+                <div id="video-subtitle-overlay" class="gradial-subtitle-overlay">
+                  <div id="video-subtitle-text" class="gradial-caption-box preset-style-classic"></div>
+                </div>
+              </div>
+              
+              <!-- EMPTY STATE / DROPZONE -->
+              <div id="video-empty-state">
+                <div class="empty-dropzone-box" id="video-dropzone">
+                  <div id="btn-empty-dropzone-click" class="vs-dropzone-inner">
+                    <div class="empty-icon-ring">
+                      <i class="ph-fill ph-upload-simple"></i>
+                    </div>
+                    <h3 class="vs-dropzone-title">Drop a video here</h3>
+                    <p class="vs-dropzone-desc">or click to browse files</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- FLOATING TRANSPORT BAR -->
+            <div id="floating-transport-bar" class="transport-bar-floating">
+              <button class="transport-play-btn" id="btn-vid-play-pause" title="Play / Pause">
+                <i class="ph-fill ph-play" id="floating-play-icon" style="font-size:16px;"></i>
+              </button>
+              <span id="vid-timecode-current" class="transport-time">00:00</span>
+              <div class="transport-track" id="floating-transport-track">
+                <div class="transport-fill" id="floating-transport-fill" style="width: 0%;"></div>
+                <input type="range" id="vid-seekbar-slider" class="timeline-scrubber-input" min="0" max="100" value="0" step="0.1">
+              </div>
+              <span id="vid-timecode-total" class="transport-time">00:00</span>
+              <button class="transport-icon-btn" id="btn-vid-mute" title="Mute/Unmute">
+                <i class="ph-fill ph-speaker-high" style="font-size:15px;"></i>
+              </button>
+              <button class="transport-icon-btn" id="btn-vid-fullscreen" title="Fullscreen">
+                <i class="ph-fill ph-arrows-out" style="font-size:15px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- TIMELINE GLASS PANEL -->
+          <div class="glass-panel studio-timeline">
+            <div id="pro-video-timeline-container">
+              <div class="vs-timeline-toolbar">
+                <div class="vs-timeline-tools-left">
+                  <button class="btn-sk btn-primary-sk btn-xs-compact" id="btn-timeline-add-subtitle" style="font-size:0.68rem;">
+                    <i class="ph-fill ph-plus" style="font-size:11px;"></i> Add
+                  </button>
+                  <div class="vs-header-divider"></div>
+                  <div class="vs-timeline-icons">
+                    <button class="vs-tool-btn" id="btn-timeline-undo" title="Undo (Ctrl+Z)"><i class="ph-fill ph-arrow-u-up-left" style="font-size:13px;"></i></button>
+                    <button class="vs-tool-btn" id="btn-timeline-redo" title="Redo (Ctrl+Y)"><i class="ph-fill ph-arrow-u-up-right" style="font-size:13px;"></i></button>
+                    <button class="vs-tool-btn" id="btn-timeline-split" title="Split at Playhead (S)"><i class="ph-fill ph-scissors" style="font-size:13px;"></i></button>
+                    <button class="vs-tool-btn" id="btn-timeline-delete" title="Delete Segment (Del)"><i class="ph-fill ph-trash" style="font-size:13px;"></i></button>
+                  </div>
+                </div>
+                <div class="vs-timeline-tools-right">
+                  <span class="vs-timecode" id="pro-timeline-timecode">00:00.00 / 00:00.00</span>
+                  <div class="vs-zoom-wrap">
+                    <i class="ph-fill ph-magnifying-glass-minus" style="font-size:11px;"></i>
+                    <input type="range" id="timeline-zoom-slider" class="sk-slider sk-slider-compact" min="1" max="5" step="0.2" value="1" style="width:60px;">
+                    <i class="ph-fill ph-magnifying-glass-plus" style="font-size:11px;"></i>
+                  </div>
+                </div>
+              </div>
+              <div id="pro-timeline-track-scroll" class="vs-timeline-scroll">
+                <div id="pro-timeline-track-content" class="vs-timeline-content">
+                  <div id="pro-timeline-ruler" class="vs-timeline-ruler"></div>
+                  <div id="pro-timeline-blocks-layer" class="vs-timeline-blocks"></div>
+                  <canvas id="pro-timeline-waveform-canvas" class="vs-waveform-canvas"></canvas>
+                  <div id="pro-timeline-playhead" class="vs-playhead">
+                    <div class="vs-playhead-dot"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- END studio-center -->
+        </div><!-- END studio-body-layout -->
+
+      </div><!-- END workspace-video-layout -->
 
 
     </main>
   </div>
+
 
   <!-- ================= CUSTOM COLOR PICKER MODAL ================= -->
   <div id="color-picker-modal-overlay" class="export-modal-backdrop hidden" style="backdrop-filter: blur(12px);">
@@ -1486,10 +2034,10 @@
       
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
         <span style="font-size: 0.95rem; font-weight: 800; color: var(--text-white); display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px;">
-          <i data-lucide="palette" style="width: 18px; height: 18px; color: var(--color-seaweed);"></i> Color Studio
+          <i class="ph-fill ph-palette" style="font-size: 18px; color: var(--color-seaweed);"></i> Color Studio
         </span>
         <button id="color-picker-close-btn" class="settings-icon-btn" style="width: 30px; height: 30px;">
-          <i data-lucide="x"></i>
+          <i class="ph-fill ph-x"></i>
         </button>
       </div>
 
@@ -1550,7 +2098,7 @@
   <style id="dynamic-keyframes-holder"></style>
 
   <!-- Toast Notification Container -->
-  <div id="toast-container" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 99999;"></div>
+  <div id="toast-container" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000005;"></div>
 
   <!-- WebM / MP4 Video Exporter Fallback -->
   <script src="app.js"></script>

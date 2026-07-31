@@ -1,43 +1,92 @@
-# Gradial
+<div align="center">
 
-**Gradial** is a lightning-fast, highly aesthetic web application for generating beautiful gradients, editing image backgrounds, and color grading videos. It runs entirely in the browser at a butter-smooth 60fps, built with vanilla HTML, CSS, and JS (no heavy frameworks).
+# ✦ GRADIAL STUDIO ✦
+### High-Performance Browser-Based Media & AI Subtitle Studio
 
-## Story Behind The App
-My friend **[Ahmad2012k](https://github.com/Ahmad2012k)** provided the creative direction and assistance for many of the features in this app. I decided to build it based on his creative advice! He suggested the features, and I developed them from scratch.
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-00FF88?style=for-the-badge&logo=shield)](LICENSE)
+[![Engine: 60 FPS](https://img.shields.io/badge/Performance-60_FPS_GPU-00FF88?style=for-the-badge&logo=speedtest)](https://github.com)
+[![Platform: Web](https://img.shields.io/badge/Platform-100%25_Static_Web-00FF88?style=for-the-badge&logo=googlechrome)](https://github.com)
+[![Architecture: Zero Dependency](https://img.shields.io/badge/Architecture-Vanilla_JS_--_No_Build-00FF88?style=for-the-badge&logo=javascript)](https://github.com)
 
-## Credits & Acknowledgments
+---
+
+<p align="center">
+  <b>Gradial Studio</b> is a premium, high-performance web application for AI-powered video subtitle transcription, real-time procedural gradient synthesis, color grading, and image background processing. Built with vanilla HTML5, CSS3, and JavaScript, it runs entirely client-side at a smooth 60 FPS with zero backend server dependencies.
+</p>
+
+---
+
+</div>
+
+## 🌟 Key Features
+
+### 🎙️ 1. AI Subtitle Generator & Dynamic Karaoke Engine
+- **Groq Whisper Transcription**: High-accuracy word-level audio transcription supporting **English**, **Hinglish (Roman Hindi)**, and auto-detection.
+- **Real-Time Karaoke Highlights**: Dynamic word-by-word active highlighting synchronized with video audio playback.
+- **Custom Subtitle Styling**: Customize font families (*Outfit, Inter, Impact, Playfair*), font sizes, stroke outlines, background pill colors, and letter spacing.
+- **Subtitle File Export**: Instant single-click export of formatted **.SRT** and WebVTT **.VTT** subtitle files.
+
+---
+
+### 🎨 2. Procedural & Positional Gradient Synthesis
+- **7 Dynamic Motion Gradient Engines**: Procedural noise displacement, seed rate evolution, and DaVinci Resolve-inspired cosine keyframe interpolation.
+- **Positional Canvas Mesh**: Drag-and-drop interactive color nodes across a 2D canvas with real-time intensity-weighted ambient blending.
+- **Linear & Radial Controls**: Precision rotation angle dial wheel, lockstep color studio inputs, and high-resolution PNG export (1080p, 4K, 8K).
+
+---
+
+### 🎛️ 3. Cinematic Color Grading & Photographic Style Pad
+- **2D Photographic Style Pad**: Zero-lag matrix controller for real-time 2D Tone and Warmth color adjustments.
+- **Cinematic 3D LUT Presets**: Integrated real-time 3D LUT color filters, exposure, contrast, saturation, temperature, and sharpness controls.
+- **Real-Time Canvas Composition**: Hardware-accelerated GPU compositor filters for 60 FPS video and image color grading.
+
+---
+
+### 🖼️ 4. Image Studio & Background Processing
+- **Drag-and-Drop Image Canvas**: Clean upload dropzone supporting instant image background removal and color replacement.
+- **Precision Color Picker & Tolerances**: Live canvas color selection with dynamic tolerance thresholds and brush controls.
+
+---
+
+### 🎭 5. 21 Aesthetic Themes & Retro Nostalgia
+- **Skeuomorphic & Glassmorphic Designs**: Curated dark modes, neon highlights, and glassmorphism UI palettes.
+- **Retro Nostalgia Themes**:
+  - 🌐 **Frutiger Aero**: Translucent glassy panels and sky-blue desktop aesthetics.
+  - 🎮 **Original Xbox (2001)**: OG Xbox dashboard with jewel orb accenting and cyber-green HUDs.
+  - 💻 **Windows XP Luna**: Classic 2001 desktop chrome and Luna blue styling.
+
+---
+
+## 🚀 Quick Start
+
+**Gradial Studio runs 100% in your web browser with zero installation or build steps.**
+
+1. Clone or download this repository.
+2. Open `index.html` in any modern web browser (*Chrome, Edge, Brave, Firefox, Safari*).
+3. Start editing images, generating gradients, or transcribing video subtitles!
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Technology |
+| :--- | :--- |
+| **Core Architecture** | Vanilla HTML5, CSS3, JavaScript (ES6+) |
+| **Rendering Engine** | Canvas 2D API & GPU Hardware Compositor |
+| **AI Subtitles** | Groq Whisper AI API (Transcribe & Word-Timestamps) |
+| **Audio Processing** | Web Audio API (Synthesized UI Feedback) |
+| **Dependencies** | **0 External Frameworks** (Pure Client-Side Static Architecture) |
+
+---
+
+## 📜 Story & Acknowledgments
+
 - **Developer & Author:** Developer
-- **Creative Assistance:** [Ahmad2012k](https://github.com/Ahmad2012k)
+- **Creative Direction & Feature Assistance:** [Ahmad2012k](https://github.com/Ahmad2012k)
 
-## Features
-- **100% Pure Static GitHub Pages Architecture:** Runs directly in any modern browser or hosted statically on GitHub Pages with `index.html` at root, zero Node.js server dependencies, zero build steps, instant loading, asset caching, and crisp cross-platform responsiveness.
-- **60 FPS Hardware-Accelerated Performance:** 0.6x downsampled canvas buffer resolution with GPU bilinear scaling and CSS filter offloading (`filter: blur(...)`) on GPU compositor threads for 0 CPU overhead and buttery 60FPS rendering across all engines.
-- **7 Dynamic Animated Gradient & Real-Time Color Sync:**
-- **DaVinci Resolve Fusion Animated Gradient Timeline Suite:** Professional timeline video editing suite positioned below the live preview viewport (`#media-timeline-container`), featuring rounded play/pause and keyframe navigation controls matching claymorphic media aesthetics, **Interactive Timeline Scrubber Diamond Pins** (`.timeline-marker-diamond`) rendering at exact timestamp percentages with theme primary accent glowing borders, **+ Keyframe Button** (`#add-keyframe-current-btn`), **Keyframe Cards** with compass direction dials and per-keyframe color swatches, **DaVinci Fusion Effects Sidebar Panel** with Fast Noise Displacement (`#animated-displacement-slider`) and Gaussian Blur Softness (`#animated-blur-slider`) controls, real-time 60FPS Texture Noise canvas overlay, and **DaVinci Resolve Fusion Math Engine** (`interpolateKeyframeAtTime`) interpolating keyframe colors with smooth cosine easing, procedural noise displacement warping, seed rate evolution, and blur diffusion at 60FPS.
-- **Bitrate Synchronization & Animated Resolution Export Dropdown:** 1:1 real-time synchronization between Video & Export Defaults in Settings (`state.defaultExportBitrate`) and the Animated Gradient Export Menu (`#gradient-export-menu`), displaying target export bitrates (e.g. `1080p Full HD (40 Mbps)`, `4K Ultra HD (40 Mbps)`) dynamically.
-- **Cancel Export Progress Modal & Universal ESC Dismissal:** Snappy export progress modal featuring a prominent **Cancel Export** button to safely interrupt active WebCodecs / MediaRecorder export loops without reloading the page, along with universal `Escape` key handling across all modals.
-- **Clean Image Studio Upload Workflow & Contextual Controls:** Starts with a clean upload dropzone (no sample image forced on startup). Automatically grays out and disables tolerance sliders and editing controls when no image is loaded into the canvas, restoring full interactivity instantly upon image upload.
-- **0-Lag 60FPS 2D Photographic Style Pad Controller:** Throttled `requestAnimationFrame` render loop with distance-squared proximity math for smooth 2D Tone and Warmth matrix manipulations.
-- **Video Studio & Interactive Sample Generator:** Color grading with Photographic Style 2D Controller Pad, 10 Cinematic 3D LUTs, brightness, contrast, saturation, temperature, hue, and sharpen controls.
-- **Non-Blank High-Bitrate Video Export:** Powered by modern `WebCodecs API` (`VideoEncoder`), `mp4-muxer.js`, and `webm-muxer.js` VP8 fallback for exporting high-bitrate MP4 and WebM videos directly in your browser.
-- **Full Linear Gradients & Color Studio Suite:** Complete linear gradient generator featuring live real-time color picking in Color Studio modal (saturation/value grid, spectrum hue track, hex & RGB inputs), streamlined Rotational Angle suite with **Range Slider (`#angle-slider`)** and **Circle Dial Wheel (`#angle-dial-wheel`)** in 1:1 lockstep, lockstep `--slider-fill` track gradient synchronization across all input channels, canvas overlay layer purging preventing lingering canvas elements from obscuring CSS gradients, instant zero-latency viewport redraw on color change, and high-res PNG export engine (1080p, 2K QHD, 4K UHD, 8K Ultra, Mobile 9:16, Square 1:1).
-- **Interactive Positional Canvas Mesh Generator:** Multi-point radial mesh gradient generator featuring interactive canvas drag handles for placing color nodes anywhere on screen in real-time, **Intensity-Weighted Ambient Canvas Base** (`computePositionalBaseAndRadii`) dynamically blending point colors weighted by intensity and radius into an organic ambient backdrop, smooth scaled radial spreads, **+ Add Point** (`#add-positional-point-btn`), **Delete Point (X)** (`.positional-point-remove-btn`), per-point Color Studio pickers, **Intensity Sliders** (20% to 150%), **Spread Radius Sliders** (10% to 150%), texture noise integration, live multi-radial CSS generator, and high-resolution 2D Canvas PNG export engine (1080p, 4K UHD, 8K, 16:9, 9:16).
-- **Firefox & WebCodecs Video Encoder Synchronization:** 100% lockstep synchronization between Settings UI (`#setting-export-fmt-mp4`, `#setting-export-fmt-webm`) and backend Video Exporter (`exportAnimatedGradientVideo`). Auto-detects Firefox environment (`isFirefox`) to set default export format to WebM VP8/VP9 in both UI and backend engine simultaneously.
-- **Dedicated "My Gradial" Settings Page:** Features category navigation (Themes & Appearance, Audio & Sound Effects, Video & Export Defaults, Hotkey Cheatsheet, and App Specs) with real-time state persistence (`localStorage`) across all 21 themes, Web Audio volume/mute toggles, video bitrate slider (5–50 Mbps), and Alpha Channel Transparency toggle.
-- **RSA Engineering Terms & Conditions & Footer:** Includes `© 2026 RSA Engineering. All rights reserved.` and `Terms & Conditions` links on all sidebar tabs (`Image`, `Gradient`, `Video`) with a modal displaying legal license terms.
-- **21 Aesthetic Skeuomorphic, Claymorphic & Glassmorphic Themes:**
-  - **Standard Modern Themes:** Seaweed Default, Golden Sand (Light Luxe), Fire & Ice, Aqua Blossom, Oxidized Earth, Dusty Slate, Midnight Purple, Sakura, Neon Noir, Ocean Depths, Vampire Velvet, Mystic Steel, Jungle Celadon, Neon Forest, Retro Pop, Nord, Solarized Dark, Synthwave.
-  - **Special & Retro Aesthetics:** Frutiger Aero (translucent glass + wallpaper), Original Xbox (OG 2001 dashboard with Xbox jewel orb wallpaper, cyber-green HUD panels, jewel sphere slider thumbs, and neon green glow effects), and Windows XP Luna (classic desktop chrome).
-- **Uniform Tab Navigation Vector Icon Sizing:** All header tab pill buttons (`Image`, `Gradient`, `Video`) use 16px × 16px vector Lucide icons with uniform line weights, text alignment, and colors across all themes.
+---
 
-## Tech Stack
-- **HTML5 / CSS3 / JavaScript (Vanilla)**
-- **Canvas 2D API** for image processing, brush rendering, and fluid mesh generation
-- **Web Audio API** for synthesized UI sound effects
-- **WebCodecs API** (`VideoEncoder`) & `mp4-muxer` / `webm-muxer` for exporting high-quality MP4/WebM video animations
+## ⚖️ License
 
-## Usage
-Simply double-click or open `index.html` directly in any modern web browser! No installation or backend server required.
-
-## License
-This project is proprietary and closed-source. All rights are reserved. Copyright (c) 2026 RSA Engineering. See the `LICENSE` file for details.
+Copyright © 2026 **RSA Engineering**. All rights reserved.  
+This software and associated documentation files are proprietary. See the [LICENSE](LICENSE) file for complete details.
