@@ -2581,9 +2581,14 @@ body {
   min-width: 16px !important;
   min-height: 16px !important;
   stroke-width: 2.2px !important;
-  display: inline-block;
-  vertical-align: middle;
-  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+  flex-shrink: 0 !important;
 }
 
 .tab-pill-btn:hover {

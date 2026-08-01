@@ -53,7 +53,7 @@
             <i class="ph-fill ph-download-simple"></i>
           </div>
           <div>
-            <h3 class="gradial-export-title">Export Subtitles &amp; Video</h3>
+            <h3 class="gradial-export-title">Export</h3>
           </div>
         </div>
         <button id="btn-close-export-options" class="gradial-modal-close-btn" title="Close"><i class="ph-fill ph-x"></i></button>
@@ -61,66 +61,60 @@
 
       <div class="gradial-export-popup-body" style="gap: 16px;">
         
-        <!-- SUBTITLES EXPORT (ACTIVE NOW) -->
+        <!-- SUBTITLES EXPORT -->
         <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; background: var(--bg-recessed); padding: 14px; border-radius: 14px; border: 1px solid var(--border-color);">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <label class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--text-white);">
-              <i class="ph-fill ph-subtitles" style="color: var(--accent-primary); font-size: 16px;"></i> Subtitle Files (Ready for Download)
+            <label class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-white);">
+              <i class="ph-fill ph-subtitles" style="color: var(--accent-primary); font-size: 16px;"></i> Subtitles
             </label>
-            <span style="background: rgba(0, 255, 136, 0.15); color: var(--accent-primary); font-weight: 800; font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; border: 1px solid rgba(0, 255, 136, 0.3);">
-              Active
-            </span>
           </div>
           
           <div style="display: flex; gap: 10px; width: 100%; margin-top: 4px;">
-            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-srt" style="flex: 1; padding: 12px; font-size: 0.85rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent-primary); color: #000;">
-              <i class="ph-fill ph-download-simple" style="font-size: 15px;"></i> Download .SRT
+            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-srt" style="flex: 1; padding: 10px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">
+              <i class="ph-fill ph-download-simple" style="font-size: 15px;"></i> .SRT
             </button>
-            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-vtt" style="flex: 1; padding: 12px; font-size: 0.85rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--accent-primary); color: #000;">
-              <i class="ph-fill ph-file-code" style="font-size: 15px;"></i> Download .VTT
+            <button class="btn-sk btn-primary-sk vs-action-btn" id="btn-popup-download-vtt" style="flex: 1; padding: 10px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">
+              <i class="ph-fill ph-file-code" style="font-size: 15px;"></i> .VTT
             </button>
           </div>
         </div>
 
-        <!-- VIDEO EXPORT (COMING SOON / LOCKED) -->
-        <div style="position: relative; border: 1px dashed var(--border-subtle); padding: 14px; border-radius: 14px; background: rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px;">
+        <!-- VIDEO EXPORT -->
+        <div style="position: relative; border: 1px solid var(--border-color); padding: 14px; border-radius: 14px; background: var(--bg-recessed); display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; opacity: 0.8;">
-              <i class="ph-fill ph-film-strip" style="color: var(--accent-primary);"></i> Video Rendering Preferences
-            </span>
-            <span style="background: var(--accent-primary); color: #000; font-weight: 800; font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;">
-              <i class="ph-fill ph-lock-key"></i> Coming Soon
+            <span class="gradial-export-label" style="display: flex; align-items: center; gap: 6px; color: var(--text-white); font-weight: 700;">
+              <i class="ph-fill ph-film-strip" style="color: var(--accent-primary);"></i> Video
             </span>
           </div>
 
           <!-- Option 1: Burn Captions Toggle -->
-          <div class="gradial-export-row" style="opacity: 0.5; pointer-events: none;">
+          <div class="gradial-export-row">
             <div class="gradial-export-label-group">
-              <label class="gradial-export-label">Burn Subtitles onto Video</label>
-              <span class="gradial-export-desc">Embed dynamic karaoke highlights directly into video frames</span>
+              <label class="gradial-export-label">Burn Subtitles</label>
+              <span class="gradial-export-desc">Embed subtitles directly into exported video</span>
             </div>
             <label class="gradial-switch">
-              <input type="checkbox" id="popup-burn-captions-toggle" checked disabled>
+              <input type="checkbox" id="popup-burn-captions-toggle" checked>
               <span class="gradial-slider-round"></span>
             </label>
           </div>
 
-          <!-- Option 2: Target Resolution & FPS -->
-          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.5; pointer-events: none;">
-            <label class="gradial-export-label">Target Resolution &amp; Framerate</label>
-            <select id="popup-video-scale-select" class="sk-select vs-select" style="width: 100%; font-weight: 700; padding: 10px 14px;" disabled>
-              <option value="1" selected>1080p Full HD (60 FPS)</option>
-              <option value="2">4K Ultra HD (60 FPS)</option>
-              <option value="0.75">720p HD (30 FPS)</option>
+          <!-- Option 2: Target Resolution -->
+          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+            <label class="gradial-export-label">Resolution</label>
+            <select id="popup-video-scale-select" class="sk-select vs-select" style="width: 100%; font-weight: 600; padding: 8px 12px;">
+              <option value="1" selected>1080p</option>
+              <option value="2">4K</option>
+              <option value="0.75">720p</option>
             </select>
           </div>
 
           <!-- Option 3: Video Format -->
-          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px; opacity: 0.5; pointer-events: none;">
-            <label class="gradial-export-label">Encoding Format</label>
-            <select id="popup-video-format-select" class="sk-select vs-select" style="width: 100%; font-weight: 700; padding: 10px 14px;" disabled>
-              <option value="mp4" selected>MP4 Video (H.264 / AAC Audio)</option>
-              <option value="webm">WebM Video (VP9 / Opus Audio)</option>
+          <div class="gradial-export-row" style="flex-direction: column; align-items: flex-start; gap: 6px;">
+            <label class="gradial-export-label">Format</label>
+            <select id="popup-video-format-select" class="sk-select vs-select" style="width: 100%; font-weight: 600; padding: 8px 12px;">
+              <option value="mp4" selected>MP4</option>
+              <option value="webm">WebM</option>
             </select>
           </div>
         </div>
@@ -128,9 +122,9 @@
       </div>
 
       <div class="gradial-export-popup-footer">
-        <button id="btn-start-video-export" class="btn-sk btn-secondary-sk gradial-export-main-btn" style="width: 100%; font-size: 0.9rem; font-weight: 800; padding: 12px; opacity: 0.7; cursor: not-allowed;">
-          <i class="ph-fill ph-lock-key" style="font-size: 16px;"></i>
-          <span>Video Exporting • Coming Soon</span>
+        <button id="btn-start-video-export" class="btn-sk btn-primary-sk gradial-export-main-btn" style="width: 100%; font-size: 0.9rem; font-weight: 700; padding: 12px; background: var(--accent-primary); color: #000; cursor: pointer;">
+          <i class="ph-fill ph-film-strip" style="font-size: 16px;"></i>
+          <span>Export Video</span>
         </button>
       </div>
     </div>
@@ -146,8 +140,8 @@
           <i class="ph-fill ph-spinner spin-icon" style="color:var(--color-seaweed);"></i>
         </div>
         <div class="export-header-text">
-          <h3 id="export-modal-title" class="export-modal-h3">Exporting</h3>
-          <span id="export-modal-status" class="export-modal-sub">Initializing...</span>
+          <h3 id="export-modal-title" class="export-modal-h3">Exporting Video</h3>
+          <span id="export-modal-status" class="export-modal-sub">Processing...</span>
         </div>
         <span id="export-modal-percent" class="export-percent-badge">0%</span>
       </div>
@@ -2100,7 +2094,9 @@
   <!-- Toast Notification Container -->
   <div id="toast-container" style="position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 10000005;"></div>
 
-  <!-- WebM / MP4 Video Exporter Fallback -->
+  <!-- MP4 Container Muxer Engine -->
+  <script src="mp4-muxer.js"></script>
+  <!-- WebM / MP4 Video Exporter Engine -->
   <script src="app.js"></script>
 </body>
 </html>
