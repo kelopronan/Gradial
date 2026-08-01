@@ -8770,64 +8770,40 @@
       var currTime = video ? (video.currentTime || 0) : 0;
       var isPlaying = video ? !video.paused : false;
       var state = CaptionStore.getState();
-      var segments = state.segments || (typeof videoSubState !== 'undefined' ? videoSubState.segments : []) || [];
 
-      var activeSeg = segments.find(function (s) {
-        return currTime >= s.start && currTime <= s.end;
-      });
+      var frameSpec = resolveCaptionFrame(currTime, 1280, 720);
 
-      // ONLY fallback to selectedSegmentId if video is PAUSED and no segment is active at current position
-      if (!activeSeg && !isPlaying && state.selectedSegmentId) {
-        activeSeg = segments.find(function (s) { return s.id === state.selectedSegmentId; });
+      // Fallback to selectedSegmentId if video is paused & no segment active
+      if (!frameSpec && !isPlaying && state.selectedSegmentId) {
+        var selSeg = (state.segments || []).find(function (s) { return s.id === state.selectedSegmentId; });
+        if (selSeg) {
+          frameSpec = resolveCaptionFrame(selSeg.start + 0.05, 1280, 720);
+        }
       }
 
       var subBoxEl = $('video-subtitle-text');
       var overlayEl = $('video-subtitle-overlay');
 
-      if (activeSeg && activeSeg.text && activeSeg.text.trim()) {
-        var words = activeSeg.text.trim().split(/\s+/);
-        var segDuration = Math.max(0.1, activeSeg.end - activeSeg.start);
-        var progressInSeg = Math.min(1, Math.max(0, (currTime - activeSeg.start) / segDuration));
-        var activeWordIndex = Math.min(words.length - 1, Math.floor(progressInSeg * words.length));
-
-        var segWords = (activeSeg.words && activeSeg.words.length > 0) ? activeSeg.words : null;
-        var anyWordActiveByTime = false;
-        if (segWords) {
-          anyWordActiveByTime = segWords.some(function (wo) {
-            if (!wo || !isFinite(wo.start) || !isFinite(wo.end)) return false;
-            var wStart = wo.start >= activeSeg.start ? wo.start : (activeSeg.start + wo.start);
-            var wEnd = wo.end >= activeSeg.start ? wo.end : (activeSeg.start + wo.end);
-            return (currTime >= wStart && currTime <= wEnd);
-          });
-        }
-
-        var wordsHTML = words.map(function (w, idx) {
-          var wordObj = segWords ? segWords[idx] : null;
-          var wText = wordObj ? (wordObj.text || w) : w;
-          var wColor = wordObj ? wordObj.colorOverride : null;
-
-          var isActive = false;
-          if (anyWordActiveByTime && wordObj && isFinite(wordObj.start) && isFinite(wordObj.end)) {
-            var wStart = wordObj.start >= activeSeg.start ? wordObj.start : (activeSeg.start + wordObj.start);
-            var wEnd = wordObj.end >= activeSeg.start ? wordObj.end : (activeSeg.start + wordObj.end);
-            isActive = (currTime >= wStart && currTime <= wEnd);
-          } else {
-            isActive = (idx === activeWordIndex);
+      if (frameSpec && frameSpec.words && frameSpec.words.length > 0) {
+        var wordsHTML = frameSpec.words.map(function (w) {
+          var cls = 'gradial-word' + (w.isActive ? ' gradial-word-active' : '');
+          var styleAttr = '';
+          if (w.isActive && frameSpec.activeWordColor) {
+            styleAttr = ' style="color:' + escapeHTML(frameSpec.activeWordColor) + ' !important;"';
+          } else if (w.colorOverride) {
+            styleAttr = ' style="color:' + escapeHTML(w.colorOverride) + ' !important;"';
           }
-
-          var cls = 'gradial-word' + (isActive ? ' gradial-word-active' : '');
-          var styleAttr = (wColor && !isActive) ? ' style="color:' + escapeHTML(wColor) + ' !important;"' : '';
-          return '<span class="' + cls + '"' + styleAttr + '>' + escapeHTML(wText) + '</span>';
+          return '<span class="' + cls + '"' + styleAttr + '>' + escapeHTML(w.text) + '</span>';
         }).join(' ');
 
-        if (!forceRefresh && _lastRenderedWordsHTML === wordsHTML && _lastRenderedSegId === activeSeg.id) {
+        if (!forceRefresh && _lastRenderedWordsHTML === wordsHTML && _lastRenderedSegId === frameSpec.segmentId) {
           if (overlayEl) show(overlayEl);
           if ($('pro-canvas-overlay')) show($('pro-canvas-overlay'));
           return;
         }
 
         _lastRenderedWordsHTML = wordsHTML;
-        _lastRenderedSegId = activeSeg.id;
+        _lastRenderedSegId = frameSpec.segmentId;
 
         if (subBoxEl) {
           subBoxEl.innerHTML = wordsHTML;
@@ -10583,108 +10559,576 @@
 
       if (startExportBtn) {
         startExportBtn.addEventListener('click', function () {
-          showToast('🎥 High-Speed Video Export is locked for maintenance & coming soon! Download .SRT / .VTT subtitles above.', 3500);
-          if (typeof audioManager !== 'undefined' && audioManager.play) audioManager.play('pop');
+          closeExportPopup();
+          exportGradedVideo();
         });
       }
     }
 
-    function drawSubtitleOnExportCanvas(ctx, currTime, canvasW, canvasH) {
-      var captionSegs = (videoSubState && videoSubState.segments && videoSubState.segments.length > 0) 
-        ? videoSubState.segments 
-        : ((typeof CaptionStore !== 'undefined' && CaptionStore.getState) ? CaptionStore.getState().segments : []);
-      
-      if (!captionSegs || captionSegs.length === 0) return;
+    // =========================================================
+    // PART 4: SINGLE SOURCE OF TRUTH CAPTION RESOLVER & RENDERER
+    // =========================================================
 
-      var activeSeg = captionSegs.find(function (s) {
+    function resolveCaptionFrame(currTime, canvasW, canvasH) {
+      var state = (typeof CaptionStore !== 'undefined' && CaptionStore.getState) ? CaptionStore.getState() : {};
+      var segments = state.segments || (typeof videoSubState !== 'undefined' ? videoSubState.segments : []) || [];
+      if (!segments || segments.length === 0) return null;
+
+      var activeSeg = segments.find(function (s) {
         return currTime >= s.start && currTime <= s.end;
       });
-      if (!activeSeg || !activeSeg.text || !activeSeg.text.trim()) return;
+      if (!activeSeg || !activeSeg.text || !activeSeg.text.trim()) return null;
 
-      var rawFontSize = parseInt(videoSubState.fontSize) || 32;
-      var fontSize = Math.max(18, Math.round(rawFontSize * (canvasH / 720)));
-      var fontFamily = videoSubState.fontFamily || 'Inter, sans-serif';
-      var isUpper = videoSubState.textTransform === 'uppercase';
+      var globalStyle = state.globalStyle || {};
+      var transition = state.transition || {};
+      var effectiveStyle = Object.assign({}, defaultCaptionStyle || {}, globalStyle, activeSeg.styleOverride || {});
+
+      var fontFamily = effectiveStyle.fontFamily || (typeof videoSubState !== 'undefined' ? videoSubState.fontFamily : 'Outfit') || 'Outfit';
+      var rawFontSize = effectiveStyle.fontSize || (typeof videoSubState !== 'undefined' ? parseInt(videoSubState.fontSize) : 24) || 24;
+      var fontSize = Math.max(16, Math.round(rawFontSize * (canvasH / 720)));
+      var fontWeight = effectiveStyle.fontWeight || '800';
+      var fontStyle = effectiveStyle.fontStyle || 'normal';
+      var textAlign = effectiveStyle.textAlign || 'center';
+      var textTransform = effectiveStyle.textCase || effectiveStyle.textTransform || (typeof videoSubState !== 'undefined' && videoSubState.textTransform === 'uppercase' ? 'uppercase' : 'none');
+
+      var colorType = effectiveStyle.colorType || 'solid';
+      var solidColor = effectiveStyle.solidColor || (typeof videoSubState !== 'undefined' ? videoSubState.textColor : '#FFFFFF') || '#FFFFFF';
+      var activeWordColor = effectiveStyle.activeWordColor || (typeof videoSubState !== 'undefined' ? videoSubState.activeWordColor : '#00FF88') || '#00FF88';
+      var bgColor = effectiveStyle.backgroundColor || (typeof videoSubState !== 'undefined' ? videoSubState.bgColor : 'rgba(10, 10, 15, 0.85)') || 'rgba(10, 10, 15, 0.85)';
+      var bgOpacity = effectiveStyle.backgroundOpacity !== undefined ? effectiveStyle.backgroundOpacity : 0.85;
+
+      var gradientStops = effectiveStyle.gradientStops || [
+        { color: '#8A2BE2', position: 0 },
+        { color: '#4169E1', position: 100 }
+      ];
+      var gradientAngle = effectiveStyle.gradientAngle !== undefined ? effectiveStyle.gradientAngle : 90;
+
+      var posX = effectiveStyle.positionX !== undefined ? effectiveStyle.positionX : 50;
+      var posY = effectiveStyle.positionY !== undefined ? effectiveStyle.positionY : (typeof videoSubState !== 'undefined' ? (videoSubState.position === 'top' ? 15 : (videoSubState.position === 'center' ? 50 : 85)) : 85);
+
+      var templateId = effectiveStyle.presetId || effectiveStyle.templateId || 'default';
+
+      // Words breakdown & rock-solid word timing algorithm
+      var words = activeSeg.text.trim().split(/\s+/);
+      var numWords = words.length;
+      var segDuration = Math.max(0.1, activeSeg.end - activeSeg.start);
+      var segWords = (activeSeg.words && activeSeg.words.length > 0) ? activeSeg.words : null;
+
+      var wordRanges = [];
+      if (segWords && segWords.length > 0) {
+        for (var wIdx = 0; wIdx < numWords; wIdx++) {
+          var wo = segWords[wIdx];
+          if (wo && isFinite(wo.start) && isFinite(wo.end)) {
+            var s = wo.start >= activeSeg.start ? wo.start : (activeSeg.start + wo.start);
+            var e = wo.end >= activeSeg.start ? wo.end : (activeSeg.start + wo.end);
+            if (e <= s) e = s + 0.1;
+            wordRanges.push({ start: s, end: e, text: wo.text || words[wIdx], colorOverride: wo.colorOverride });
+          } else {
+            wordRanges.push(null);
+          }
+        }
+      }
+
+      var totalChars = words.reduce(function (a, b) { return a + b.length; }, 0) || 1;
+      var charAcc = 0;
+      var fallbackRanges = words.map(function (w) {
+        var wStart = activeSeg.start + (charAcc / totalChars) * segDuration;
+        charAcc += w.length;
+        var wEnd = activeSeg.start + (charAcc / totalChars) * segDuration;
+        return { start: wStart, end: wEnd, text: w };
+      });
+
+      var activeIndex = -1;
+      for (var idx = 0; idx < numWords; idx++) {
+        var range = (wordRanges[idx] && isFinite(wordRanges[idx].start)) ? wordRanges[idx] : fallbackRanges[idx];
+        var nextRange = (idx + 1 < numWords)
+          ? ((wordRanges[idx + 1] && isFinite(wordRanges[idx + 1].start)) ? wordRanges[idx + 1] : fallbackRanges[idx + 1])
+          : null;
+
+        var windowStart = range.start;
+        var windowEnd = nextRange ? Math.min(nextRange.start, activeSeg.end) : activeSeg.end;
+
+        if (currTime >= windowStart && currTime < windowEnd) {
+          activeIndex = idx;
+          break;
+        }
+      }
+
+      if (activeIndex === -1) {
+        if (currTime < activeSeg.start) activeIndex = 0;
+        else activeIndex = numWords - 1;
+      }
+
+      var wordSpecs = words.map(function (w, idx) {
+        var wordObj = segWords ? segWords[idx] : null;
+        var wText = wordObj ? (wordObj.text || w) : w;
+        if (textTransform === 'uppercase') wText = wText.toUpperCase();
+        else if (textTransform === 'lowercase') wText = wText.toLowerCase();
+
+        return {
+          text: wText,
+          isActive: (idx === activeIndex),
+          colorOverride: wordObj ? wordObj.colorOverride : null
+        };
+      });
+
+      // Calculate animation transforms
+      var scale = 1.0;
+      var opacity = 1.0;
+      var translateY = 0;
+      var transType = transition.type || transition.id || 'karaoke-highlight';
+      var transDur = transition.duration || 0.3;
+
+      var timeFromStart = currTime - activeSeg.start;
+      var timeFromEnd = activeSeg.end - currTime;
+
+      if (transType === 'pop-in') {
+        if (timeFromStart < transDur) {
+          var p = timeFromStart / transDur;
+          scale = 0.7 + 0.3 * p;
+          opacity = p;
+        }
+      } else if (transType === 'fade') {
+        if (timeFromStart < transDur) {
+          opacity = timeFromStart / transDur;
+        } else if (timeFromEnd < transDur) {
+          opacity = Math.max(0, timeFromEnd / transDur);
+        }
+      } else if (transType === 'slide-up') {
+        if (timeFromStart < transDur) {
+          var p = timeFromStart / transDur;
+          translateY = (1 - p) * 30;
+          opacity = p;
+        }
+      } else if (transType === 'bounce') {
+        if (timeFromStart < transDur) {
+          var p = timeFromStart / transDur;
+          scale = 0.8 + 0.3 * Math.sin(p * Math.PI);
+        }
+      }
+
+      return {
+        segmentId: activeSeg.id,
+        fontFamily: fontFamily,
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        fontStyle: fontStyle,
+        textAlign: textAlign,
+        textTransform: textTransform,
+        colorType: colorType,
+        solidColor: solidColor,
+        gradientStops: gradientStops,
+        gradientAngle: gradientAngle,
+        activeWordColor: activeWordColor,
+        bgColor: bgColor,
+        bgOpacity: bgOpacity,
+        positionX: posX,
+        positionY: posY,
+        templateId: templateId,
+        words: wordSpecs,
+        scale: scale,
+        opacity: opacity,
+        translateY: translateY
+      };
+    }
+
+    function drawCaptionOnCanvas(ctx, frameSpec, canvasW, canvasH) {
+      if (!frameSpec || !frameSpec.words || frameSpec.words.length === 0) return;
 
       ctx.save();
-      ctx.font = '800 ' + fontSize + 'px ' + fontFamily;
+
+      var anchorX = (frameSpec.positionX / 100) * canvasW;
+      var anchorY = (frameSpec.positionY / 100) * canvasH + (frameSpec.translateY || 0);
+
+      ctx.translate(anchorX, anchorY);
+      if (frameSpec.scale !== 1) ctx.scale(frameSpec.scale, frameSpec.scale);
+      if (frameSpec.opacity !== undefined) ctx.globalAlpha = frameSpec.opacity;
+
+      var fontSize = frameSpec.fontSize;
+      var fontStr = frameSpec.fontStyle + ' ' + frameSpec.fontWeight + ' ' + fontSize + 'px "' + frameSpec.fontFamily + '", sans-serif';
+      ctx.font = fontStr;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      var words = activeSeg.text.trim().split(/\s+/);
-      var segDuration = Math.max(0.1, activeSeg.end - activeSeg.start);
-      var progressInSeg = Math.min(1, Math.max(0, (currTime - activeSeg.start) / segDuration));
-      var activeWordIndex = Math.min(words.length - 1, Math.floor(progressInSeg * words.length));
-
-      var segWords = (activeSeg.words && activeSeg.words.length > 0) ? activeSeg.words : null;
-      var anyWordActiveByTime = false;
-      if (segWords) {
-        anyWordActiveByTime = segWords.some(function (wo) {
-          if (!wo || !isFinite(wo.start) || !isFinite(wo.end)) return false;
-          var wStart = wo.start >= activeSeg.start ? wo.start : (activeSeg.start + wo.start);
-          var wEnd = wo.end >= activeSeg.start ? wo.end : (activeSeg.start + wo.end);
-          return (currTime >= wStart && currTime <= wEnd);
-        });
-      }
-
-      var measuredWords = words.map(function(w, idx) {
-        var wordObj = segWords ? segWords[idx] : null;
-        var wText = wordObj ? (wordObj.text || w) : w;
-        var txt = isUpper ? wText.toUpperCase() : wText;
-
-        var isActive = false;
-        if (anyWordActiveByTime && wordObj && isFinite(wordObj.start) && isFinite(wordObj.end)) {
-          var wStart = wordObj.start >= activeSeg.start ? wordObj.start : (activeSeg.start + wordObj.start);
-          var wEnd = wordObj.end >= activeSeg.start ? wordObj.end : (activeSeg.start + wordObj.end);
-          isActive = (currTime >= wStart && currTime <= wEnd);
-        } else {
-          isActive = (idx === activeWordIndex);
-        }
-
-        return { text: txt, width: ctx.measureText(txt + ' ').width, isActive: isActive };
+      // Measure word widths
+      var measuredWords = frameSpec.words.map(function (w) {
+        var width = ctx.measureText(w.text + ' ').width;
+        return {
+          text: w.text,
+          width: width,
+          isActive: w.isActive,
+          colorOverride: w.colorOverride
+        };
       });
 
-      var totalWidth = measuredWords.reduce(function(acc, item) { return acc + item.width; }, 0);
-      var activeWordColor = videoSubState.activeWordColor || '#00FF88';
-      var textColor = videoSubState.textColor || '#FFFFFF';
-      var bgColor = videoSubState.bgColor || 'rgba(0, 0, 0, 0.75)';
-
-      // Subtitle Vertical Position
-      var posKey = videoSubState.position || 'bottom';
-      var posY = canvasH * 0.85;
-      if (posKey === 'top') posY = canvasH * 0.15;
-      else if (posKey === 'center') posY = canvasH * 0.50;
-
-      // Draw background pill container
+      var totalWidth = measuredWords.reduce(function (acc, item) { return acc + item.width; }, 0);
       var paddingH = fontSize * 0.6;
       var boxW = Math.min(canvasW * 0.92, totalWidth + paddingH * 2);
       var boxH = fontSize * 1.6;
-      var boxX = canvasW / 2 - boxW / 2;
-      var boxY = posY - boxH / 2;
+      var boxX = -boxW / 2;
+      var boxY = -boxH / 2;
 
-      ctx.fillStyle = bgColor;
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, fontSize * 0.4);
-      else ctx.rect(boxX, boxY, boxW, boxH);
-      ctx.fill();
+      // Background Container Styling based on templateId
+      var tmpl = frameSpec.templateId;
+      if (tmpl === 'tmpl-terminal' || tmpl === 'terminal_type') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+        ctx.strokeStyle = '#00FF88';
+        ctx.lineWidth = Math.max(1, fontSize * 0.05);
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+        else ctx.rect(boxX, boxY, boxW, boxH);
+        ctx.fill();
+        ctx.stroke();
+      } else if (tmpl === 'tmpl-liquid-glass' || tmpl === 'aero_bubble') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = Math.max(1, fontSize * 0.04);
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, fontSize * 0.4);
+        else ctx.rect(boxX, boxY, boxW, boxH);
+        ctx.fill();
+        ctx.stroke();
+      } else if (tmpl === 'tmpl-synthwave' || tmpl === 'synth_neon') {
+        ctx.fillStyle = 'rgba(20, 10, 35, 0.85)';
+        ctx.strokeStyle = '#FF007A';
+        ctx.lineWidth = Math.max(2, fontSize * 0.06);
+        ctx.shadowColor = '#FF007A';
+        ctx.shadowBlur = fontSize * 0.5;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, fontSize * 0.3);
+        else ctx.rect(boxX, boxY, boxW, boxH);
+        ctx.fill();
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      } else if (frameSpec.bgColor && frameSpec.bgOpacity > 0) {
+        ctx.fillStyle = frameSpec.bgColor;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(boxX, boxY, boxW, boxH, fontSize * 0.4);
+        else ctx.rect(boxX, boxY, boxW, boxH);
+        ctx.fill();
+      }
 
-      // Render words cleanly with stroke + fill matching studio player
-      var currentX = canvasW / 2 - totalWidth / 2;
+      // Text Rendering Word-by-Word
+      var currentX = -totalWidth / 2;
       ctx.lineWidth = Math.max(2, Math.round(fontSize * 0.08));
-      ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
 
-      measuredWords.forEach(function(item) {
-        var wordX = currentX + item.width / 2;
-        ctx.fillStyle = item.isActive ? activeWordColor : textColor;
-        ctx.strokeText(item.text, wordX, posY);
-        ctx.fillText(item.text, wordX, posY);
+      // Build Gradient if gradient mode
+      var gradientFill = null;
+      if (frameSpec.colorType === 'gradient' && frameSpec.gradientStops && frameSpec.gradientStops.length >= 2) {
+        var angleRad = (frameSpec.gradientAngle || 90) * (Math.PI / 180);
+        var halfW = totalWidth / 2;
+        var x1 = -Math.cos(angleRad) * halfW;
+        var y1 = -Math.sin(angleRad) * (boxH / 2);
+        var x2 = Math.cos(angleRad) * halfW;
+        var y2 = Math.sin(angleRad) * (boxH / 2);
+
+        gradientFill = ctx.createLinearGradient(x1, y1, x2, y2);
+        frameSpec.gradientStops.forEach(function (stop) {
+          var pos = stop.position !== undefined ? (stop.position > 1 ? stop.position / 100 : stop.position) : 0;
+          gradientFill.addColorStop(Math.min(1, Math.max(0, pos)), stop.color);
+        });
+      }
+
+      measuredWords.forEach(function (item) {
+        var wordCenterX = currentX + item.width / 2;
+
+        ctx.save();
+
+        if (item.isActive) {
+          // Active Word Pop & Text Glow
+          ctx.translate(wordCenterX, 0);
+          ctx.scale(1.14, 1.14);
+          wordCenterX = 0;
+
+          var activeCol = frameSpec.activeWordColor || '#00FF88';
+          ctx.fillStyle = activeCol;
+
+          // Template pill styles for active words
+          if (tmpl === 'preset-style-pink-pill') {
+            ctx.fillStyle = '#FF007A';
+            var pW = item.width + 10;
+            var pH = fontSize * 1.2;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(-pW/2, -pH/2, pW, pH, 6);
+            else ctx.rect(-pW/2, -pH/2, pW, pH);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+          } else if (tmpl === 'preset-style-ali-abdaal') {
+            ctx.fillStyle = '#FFFFFF';
+            var pW = item.width + 12;
+            var pH = fontSize * 1.2;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(-pW/2, -pH/2, pW, pH, 6);
+            else ctx.rect(-pW/2, -pH/2, pW, pH);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+          } else if (tmpl === 'preset-style-bubble-cyan') {
+            ctx.fillStyle = '#00D2FF';
+            var pW = item.width + 14;
+            var pH = fontSize * 1.25;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(-pW/2, -pH/2, pW, pH, 16);
+            else ctx.rect(-pW/2, -pH/2, pW, pH);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+          } else {
+            ctx.shadowColor = activeCol;
+            ctx.shadowBlur = fontSize * 0.4;
+          }
+        } else if (item.colorOverride) {
+          ctx.fillStyle = item.colorOverride;
+        } else if (gradientFill) {
+          ctx.fillStyle = gradientFill;
+        } else {
+          ctx.fillStyle = frameSpec.solidColor || '#FFFFFF';
+        }
+
+        ctx.strokeText(item.text, wordCenterX, 0);
+        ctx.fillText(item.text, wordCenterX, 0);
+        ctx.restore();
+
         currentX += item.width;
       });
 
       ctx.restore();
     }
 
-    function exportGradedVideo() {
+    function drawSubtitleOnExportCanvas(ctx, currTime, canvasW, canvasH) {
+      var frameSpec = resolveCaptionFrame(currTime, canvasW, canvasH);
+      if (frameSpec) {
+        drawCaptionOnCanvas(ctx, frameSpec, canvasW, canvasH);
+      }
+    }
+
+    // =========================================================
+    // PART 2: DECOUPLED SEEK-AND-DRAW WEBCODECS VIDEO EXPORTER
+    // =========================================================
+
+    function seekVideoTo(videoEl, timeSec) {
+      return new Promise(function (resolve) {
+        if (Math.abs(videoEl.currentTime - timeSec) < 0.005) {
+          resolve();
+          return;
+        }
+        var onSeeked = function () {
+          videoEl.removeEventListener('seeked', onSeeked);
+          resolve();
+        };
+        videoEl.addEventListener('seeked', onSeeked);
+        videoEl.currentTime = timeSec;
+      });
+    }
+
+    async function exportVideoWebCodecs(options) {
+      var sourceEl = options.sourceEl;
+      var durationSec = options.durationSec;
+      var fps = options.fps || 60;
+      var width = options.width;
+      var height = options.height;
+      var popupBurn = options.popupBurn !== false;
+      var onProgress = options.onProgress;
+      var onCancelCheck = options.onCancelCheck;
+
+      if (typeof VideoEncoder === 'undefined' || typeof Mp4Muxer === 'undefined') {
+        throw new Error('WebCodecs VideoEncoder or Mp4Muxer unavailable');
+      }
+
+      // 1. Audio Track Extraction & Pre-encoding
+      var audioBuffer = null;
+      var audioTrackConfig = null;
+
+      try {
+        var arrayBuffer = null;
+        var fileToRead = (typeof state !== 'undefined' && state && state.videoFile) ? state.videoFile : null;
+        if (fileToRead) {
+          arrayBuffer = await fileToRead.arrayBuffer();
+        } else if (sourceEl && sourceEl.src) {
+          var res = await fetch(sourceEl.src);
+          arrayBuffer = await res.arrayBuffer();
+        }
+
+        if (arrayBuffer) {
+          var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+          if (audioBuffer && audioBuffer.numberOfChannels > 0) {
+            audioTrackConfig = {
+              codec: 'aac',
+              numberOfChannels: Math.min(2, audioBuffer.numberOfChannels),
+              sampleRate: audioBuffer.sampleRate
+            };
+          }
+        }
+      } catch (audioErr) {
+        console.warn('[Export] Audio track extraction notice:', audioErr);
+      }
+
+      var filterString = buildVideoFilterCss();
+
+      var canvas = (typeof OffscreenCanvas !== 'undefined')
+        ? new OffscreenCanvas(width, height)
+        : document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      var ctx = canvas.getContext('2d', { willReadFrequently: true, desynchronized: true });
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      var muxerOptions = {
+        target: new Mp4Muxer.ArrayBufferTarget(),
+        video: {
+          codec: 'avc',
+          width: width,
+          height: height
+        },
+        fastStart: 'in-memory',
+        firstTimestampBehavior: 'offset'
+      };
+
+      if (audioTrackConfig && typeof AudioEncoder !== 'undefined') {
+        muxerOptions.audio = audioTrackConfig;
+      }
+
+      var muxer = new Mp4Muxer.Muxer(muxerOptions);
+
+      // Encode Audio Track if available
+      if (audioTrackConfig && audioBuffer && typeof AudioEncoder !== 'undefined') {
+        try {
+          var audioEncoder = new AudioEncoder({
+            output: function (chunk, meta) {
+              muxer.addAudioChunk(chunk, meta);
+            },
+            error: function (e) {
+              console.error('[WebCodecs] AudioEncoder error:', e);
+            }
+          });
+
+          audioEncoder.configure({
+            codec: 'mp4a.40.2',
+            numberOfChannels: audioTrackConfig.numberOfChannels,
+            sampleRate: audioTrackConfig.sampleRate,
+            bitrate: 128000
+          });
+
+          var numChannels = audioTrackConfig.numberOfChannels;
+          var sampleRate = audioTrackConfig.sampleRate;
+          var totalSamples = Math.min(audioBuffer.length, Math.ceil(durationSec * sampleRate));
+
+          var chunkSize = 1024;
+          for (var sampleOffset = 0; sampleOffset < totalSamples; sampleOffset += chunkSize) {
+            var frameCount = Math.min(chunkSize, totalSamples - sampleOffset);
+            var planarData = new Float32Array(frameCount * numChannels);
+
+            for (var ch = 0; ch < numChannels; ch++) {
+              var channelData = audioBuffer.getChannelData(ch);
+              var subData = channelData.subarray(sampleOffset, sampleOffset + frameCount);
+              planarData.set(subData, ch * frameCount);
+            }
+
+            var timestampUs = Math.round((sampleOffset / sampleRate) * 1_000_000);
+            var audioFrame = new AudioData({
+              format: 'f32-planar',
+              sampleRate: sampleRate,
+              numberOfChannels: numChannels,
+              numberOfFrames: frameCount,
+              timestamp: timestampUs,
+              data: planarData
+            });
+
+            audioEncoder.encode(audioFrame);
+            audioFrame.close();
+          }
+
+          await audioEncoder.flush();
+        } catch (audioEncErr) {
+          console.warn('[Export] AudioEncoder notice:', audioEncErr);
+        }
+      }
+
+      // Encode Video Frames
+      var encoderError = null;
+      var videoEncoder = new VideoEncoder({
+        output: function (chunk, meta) {
+          muxer.addVideoChunk(chunk, meta);
+        },
+        error: function (e) {
+          console.error('[WebCodecs] VideoEncoder error:', e);
+          encoderError = e;
+        }
+      });
+
+      var codecConfig = {
+        codec: 'avc1.640028',
+        width: width,
+        height: height,
+        bitrate: 12_000_000,
+        framerate: fps
+      };
+
+      var supported = await VideoEncoder.isConfigSupported(codecConfig);
+      if (!supported || !supported.supported) {
+        codecConfig.codec = 'avc1.42E01E';
+        supported = await VideoEncoder.isConfigSupported(codecConfig);
+        if (!supported || !supported.supported) {
+          throw new Error('H.264 WebCodecs configuration unsupported by browser.');
+        }
+      }
+
+      videoEncoder.configure(codecConfig);
+
+      var totalFrames = Math.max(1, Math.round(durationSec * fps));
+      var frameDurationUs = Math.round(1_000_000 / fps);
+
+      sourceEl.pause();
+
+      for (var i = 0; i < totalFrames; i++) {
+        if (onCancelCheck && onCancelCheck()) {
+          try { videoEncoder.close(); } catch (e) {}
+          throw new Error('Export cancelled');
+        }
+
+        if (encoderError) throw encoderError;
+
+        var timestampSec = i / fps;
+
+        await seekVideoTo(sourceEl, timestampSec);
+
+        ctx.save();
+        if (filterString) ctx.filter = filterString;
+        ctx.drawImage(sourceEl, 0, 0, width, height);
+        ctx.restore();
+
+        if (popupBurn) {
+          try {
+            drawSubtitleOnExportCanvas(ctx, timestampSec, width, height);
+          } catch (subErr) {
+            console.error('Subtitle render error at timestamp', timestampSec, subErr);
+          }
+        }
+
+        var frame = new VideoFrame(canvas, {
+          timestamp: Math.round(i * frameDurationUs),
+          duration: frameDurationUs
+        });
+
+        videoEncoder.encode(frame, { keyFrame: i % (fps * 2) === 0 });
+        frame.close();
+
+        if (i % 15 === 0 || i === totalFrames - 1) {
+          onProgress?.(Math.round((i / totalFrames) * 100));
+          await new Promise(function (resolve) { setTimeout(resolve, 0); });
+        }
+      }
+
+      await videoEncoder.flush();
+      muxer.finalize();
+
+      return new Blob([muxer.target.buffer], { type: 'video/mp4' });
+    }
+
+    // Main Export Entry Point
+    async function exportGradedVideo() {
       var video = $('video-player-el');
       var sourceEl = (video && video.src && video.videoWidth) ? video : null;
       if (!sourceEl) {
@@ -10701,195 +11145,85 @@
       w = w % 2 === 0 ? w : w + 1;
       h = h % 2 === 0 ? h : h + 1;
 
-      var canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
+      var durationSec = (sourceEl.duration && !isNaN(sourceEl.duration) && sourceEl.duration > 0) ? sourceEl.duration : 5;
 
-      // Capture 60 FPS stream
-      var canvasStream = canvas.captureStream(60);
-      var combinedStream = new MediaStream();
-
-      canvasStream.getVideoTracks().forEach(function (vt) {
-        combinedStream.addTrack(vt);
-      });
-
-      // Capture Audio Track cleanly from HTMLVideoElement
-      if (sourceEl && sourceEl.tagName === 'VIDEO') {
-        try {
-          var vidStream = sourceEl.captureStream ? sourceEl.captureStream() : (sourceEl.mozCaptureStream ? sourceEl.mozCaptureStream() : null);
-          if (vidStream && vidStream.getAudioTracks().length > 0) {
-            vidStream.getAudioTracks().forEach(function (at) {
-              combinedStream.addTrack(at);
-            });
-          }
-        } catch (audioErr) {
-          console.warn('Audio track capture notice:', audioErr);
-        }
-      }
-
-      // Determine robust MimeType and Extension
-      var mimeType = 'video/webm;codecs=vp9,opus';
-      var fileExt = 'webm';
-
-      if (formatReq === 'mp4') {
-        if (MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')) {
-          mimeType = 'video/mp4;codecs=avc1,mp4a.40.2';
-          fileExt = 'mp4';
-        } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-          mimeType = 'video/mp4';
-          fileExt = 'mp4';
-        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')) {
-          mimeType = 'video/webm;codecs=vp9,opus';
-          fileExt = 'webm';
-          showToast('Exporting as WebM format (Native MP4 recorder unavailable in browser).', 4000);
-        } else {
-          mimeType = 'video/webm';
-          fileExt = 'webm';
-        }
-      } else {
-        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
-        fileExt = 'webm';
-      }
-
-      // Bitrate set to 25 Mbps to utilize full GPU resources for ultra-crisp quality!
-      var recorder = new MediaRecorder(combinedStream, { mimeType: mimeType, videoBitsPerSecond: 25000000 });
-      var chunks = [];
-
-      recorder.ondataavailable = function (e) {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
-      };
-
-      var isCancelled = false;
-      var renderLoopId = null;
-      var failsafeTimeout = null;
-
+      var isCancelledRef = { isCancelled: false };
       var cancelBtn = $('export-modal-cancel-btn');
       if (cancelBtn) {
         cancelBtn.onclick = function () {
-          isCancelled = true;
-          if (failsafeTimeout) clearTimeout(failsafeTimeout);
-          if (renderLoopId) cancelAnimationFrame(renderLoopId);
-          sourceEl.pause();
-          if (recorder && recorder.state !== 'inactive') {
-            try { recorder.stop(); } catch (e) {}
-          }
+          isCancelledRef.isCancelled = true;
           hide($('export-modal-overlay'));
           showToast('Export cancelled', 2000);
         };
       }
 
-      recorder.onstop = function () {
-        if (failsafeTimeout) clearTimeout(failsafeTimeout);
-        if (isCancelled) return;
-        var blob = new Blob(chunks, { type: mimeType });
-        if (!blob || blob.size === 0) {
-          showToast('Export failed: Empty video file generated.', 4000);
-          hide($('export-modal-overlay'));
-          return;
-        }
-
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = 'gradial_studio_video_60fps_' + Date.now() + '.' + fileExt;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
-        showToast('Video exported successfully (' + fileExt.toUpperCase() + ')!', 3500);
-        hide($('export-modal-overlay'));
-        sourceEl.currentTime = 0;
-      };
-
-      if ($('export-modal-title')) $('export-modal-title').textContent = 'Gradial Studio • High-Performance Render Engine';
-      if ($('export-modal-status')) $('export-modal-status').textContent = 'Rendering 60 FPS Video...';
+      if ($('export-modal-title')) $('export-modal-title').textContent = 'Exporting Video';
+      if ($('export-modal-status')) $('export-modal-status').textContent = 'Processing...';
       if ($('export-progress-fill')) $('export-progress-fill').style.width = '0%';
       if ($('export-modal-percent')) $('export-modal-percent').textContent = '0%';
       show($('export-modal-overlay'));
 
-      var filterString = buildVideoFilterCss();
-      var bEl = $('vid-brightness-slider') || $('vid-brightness');
-      var cEl = $('vid-contrast-slider') || $('vid-contrast');
-      var sEl = $('vid-saturate-slider') || $('vid-saturate');
-      var tEl = $('vid-temp-slider') || $('vid-temp');
+      var useWebCodecs = (typeof VideoEncoder !== 'undefined' && typeof Mp4Muxer !== 'undefined');
 
-      var bVal = (bEl && bEl.value !== undefined) ? parseFloat(bEl.value) || 0 : 0;
-      var cVal = (cEl && cEl.value !== undefined) ? parseFloat(cEl.value) || 0 : 0;
-      var sVal = (sEl && sEl.value !== undefined) ? parseFloat(sEl.value) || 0 : 0;
-      var tVal = (tEl && tEl.value !== undefined) ? parseFloat(tEl.value) || 0 : 0;
-
-      if (bVal === 0 && cVal === 0 && sVal === 0 && tVal === 0) {
-        filterString = '';
-      }
-
-      var durationSec = (sourceEl.duration && !isNaN(sourceEl.duration) && sourceEl.duration > 0) ? sourceEl.duration : 5;
-
-      // Hard failsafe timer to guarantee export completes and downloads!
-      failsafeTimeout = setTimeout(function() {
-        if (recorder && recorder.state !== 'inactive') {
-          console.warn('Export failsafe timer triggered - stopping recorder.');
-          try { recorder.stop(); } catch(e) {}
-        }
-      }, Math.ceil((durationSec + 2.5) * 1000));
-
-      sourceEl.muted = true;
-      sourceEl.currentTime = 0;
-
-      function renderFrameLoop() {
-        if (isCancelled) return;
-
-        ctx.save();
-        if (filterString) ctx.filter = filterString;
-        ctx.drawImage(sourceEl, 0, 0, w, h);
-        ctx.restore();
-
-        if (popupBurn) {
-          try {
-            drawSubtitleOnExportCanvas(ctx, sourceEl.currentTime, w, h);
-          } catch (subErr) {
-            console.error('Subtitle render error on frame:', subErr);
-          }
-        }
-
-        var currentT = sourceEl.currentTime || 0;
-        var pct = Math.min(100, Math.round((currentT / durationSec) * 100));
-        if ($('export-progress-fill')) $('export-progress-fill').style.width = pct + '%';
-        if ($('export-modal-percent')) $('export-modal-percent').textContent = pct + '%';
-        if ($('export-modal-status')) $('export-modal-status').textContent = 'Rendering 60 FPS Video... (' + pct + '%)';
-
-        var isNearEnd = (currentT >= durationSec - 0.12) || (currentT >= durationSec * 0.98) || sourceEl.ended;
-
-        if (isNearEnd) {
-          sourceEl.pause();
-          if (recorder && recorder.state !== 'inactive') {
-            try { recorder.stop(); } catch(e) {}
-          }
-          return;
-        }
-
-        renderLoopId = requestAnimationFrame(renderFrameLoop);
-      }
-
-      var startRecording = function () {
+      if (useWebCodecs) {
         try {
-          recorder.start(100);
-        } catch (recErr) {
-          console.error('Recorder start error:', recErr);
-        }
-        renderFrameLoop();
-      };
+          var blob = await exportVideoWebCodecs({
+            sourceEl: sourceEl,
+            durationSec: durationSec,
+            fps: 60,
+            width: w,
+            height: h,
+            popupBurn: popupBurn,
+            onProgress: function (pct) {
+              if ($('export-progress-fill')) $('export-progress-fill').style.width = pct + '%';
+              if ($('export-modal-percent')) $('export-modal-percent').textContent = pct + '%';
+              if ($('export-modal-status')) $('export-modal-status').textContent = 'Processing...';
+            },
+            onCancelCheck: function () { return isCancelledRef.isCancelled; }
+          });
 
-      var playPromise = sourceEl.play();
-      if (playPromise !== undefined) {
-        playPromise.then(startRecording).catch(function(pErr) {
-          console.warn('Playback error during export, retrying with muted play:', pErr);
-          sourceEl.muted = true;
-          sourceEl.play().then(startRecording).catch(startRecording);
-        });
-      } else {
-        startRecording();
+          if (isCancelledRef.isCancelled) return;
+
+          var fileExt = 'mp4';
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'exported_video_' + Date.now() + '.' + fileExt;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+
+          showToast('Video exported successfully.', 3500);
+          hide($('export-modal-overlay'));
+          sourceEl.currentTime = 0;
+          return;
+        } catch (webcodecsErr) {
+          if (isCancelledRef.isCancelled) return;
+          console.warn('[Export] WebCodecs notice:', webcodecsErr);
+        }
+      }
+
+      // MediaRecorder Fallback Path
+      try {
+        var result = await exportGradedVideoMediaRecorder(sourceEl, w, h, popupBurn, formatReq, durationSec, isCancelledRef);
+        if (isCancelledRef.isCancelled) return;
+        var url2 = URL.createObjectURL(result.blob);
+        var a2 = document.createElement('a');
+        a2.href = url2;
+        a2.download = 'exported_video_' + Date.now() + '.' + result.fileExt;
+        document.body.appendChild(a2);
+        a2.click();
+        document.body.removeChild(a2);
+        setTimeout(function () { URL.revokeObjectURL(url2); }, 10000);
+
+        showToast('Video exported successfully.', 3500);
+        hide($('export-modal-overlay'));
+        sourceEl.currentTime = 0;
+      } catch (fbErr) {
+        if (isCancelledRef.isCancelled) return;
+        showToast('Export failed: ' + (fbErr.message || fbErr), 4000);
+        hide($('export-modal-overlay'));
       }
     }
 

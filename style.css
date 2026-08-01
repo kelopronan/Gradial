@@ -8583,13 +8583,13 @@ body.studio-active .sidebar {
   border-radius: 9999px !important;
   color: var(--text-sub, #94a3b8) !important;
   background: transparent !important;
-  border: none !important;
+  border: 1px solid transparent !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 7px !important;
+  gap: 6px !important;
   line-height: 1 !important;
 }
 
@@ -8597,9 +8597,14 @@ body.studio-active .sidebar {
 #studio-top-pills .tab-pill-btn svg {
   font-size: 14px !important;
   line-height: 1 !important;
-  margin-top: -2px !important;
-  display: inline-block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   vertical-align: middle !important;
+  flex-shrink: 0 !important;
+  height: 14px !important;
 }
 
 #studio-top-pills .tab-pill-btn.active {
@@ -9064,12 +9069,14 @@ body.studio-active .sidebar {
   border-radius: 9999px !important;
   color: var(--text-sub) !important;
   background: transparent !important;
-  border: none !important;
+  border: 1px solid transparent !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  line-height: 1 !important;
 }
 
 #studio-top-pills .tab-pill-btn.active {
