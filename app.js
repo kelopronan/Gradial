@@ -4030,24 +4030,12 @@
     }
 
     function updateGroqKeyUI() {
-      var key = (state.groqApiKey || '').trim();
-      var settingsInput = $('settings-groq-api-key-input');
-      if (settingsInput && settingsInput.value !== key) {
-        settingsInput.value = key;
-      }
-
       var vidBadge = $('video-key-status-badge');
       var vidNotice = $('video-key-notice-text');
       if (vidBadge) {
-        if (key) {
-          vidBadge.textContent = 'API Key Configured';
-          vidBadge.style.color = 'var(--accent-primary)';
-          if (vidNotice) vidNotice.textContent = 'Groq API key is configured and ready for speech-to-text AI subtitle generation.';
-        } else {
-          vidBadge.textContent = 'No API Key';
-          vidBadge.style.color = '#FF4444';
-          if (vidNotice) vidNotice.textContent = 'No API key inserted for subtitle generation. Please configure your Groq API key in Settings.';
-        }
+        vidBadge.textContent = 'AI Transcribe Ready';
+        vidBadge.style.color = 'var(--accent-primary)';
+        if (vidNotice) vidNotice.textContent = 'Groq Whisper AI is connected and ready for speech-to-text AI subtitle generation.';
       }
     }
 
@@ -7477,9 +7465,9 @@
     }
 
     async function transcribeVideoAudioWithGroq(audioBlob, apiKey, mode, onProgress) {
-      onProgress(40, 'Sending audio to Groq Whisper AI...');
+      onProgress(40, 'Generating speech-to-text AI subtitles...');
 
-      async function requestGroq(modelName) {
+      function buildFormData(modelName) {
         var formData = new FormData();
         formData.append('file', audioBlob, 'audio.wav');
         formData.append('model', modelName);
@@ -7497,23 +7485,45 @@
           formData.append('language', 'hi');
           formData.append('prompt', 'स्पष्ट हिंदी संवाद प्रतिलेखन।');
         }
+        return formData;
+      }
 
-        return await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      var res = null;
+
+      // 1. Primary Route: Vercel Serverless API Proxy (/api/transcribe) reading GROQ_API_KEY env var
+      try {
+        var serverlessFormData = buildFormData('whisper-large-v3');
+        res = await fetch('/api/transcribe', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + apiKey.trim() },
-          body: formData
+          body: serverlessFormData
         });
+      } catch (proxyErr) {
+        console.warn('/api/transcribe serverless proxy notice:', proxyErr);
       }
 
-      var res = await requestGroq('whisper-large-v3');
-      if (!res.ok) {
-        console.warn('whisper-large-v3 failed with status ' + res.status + ', trying whisper-large-v3-turbo...');
-        res = await requestGroq('whisper-large-v3-turbo');
+      // 2. Secondary Fallback: Direct Groq API call if /api/transcribe returned non-200 or is unavailable
+      if (!res || !res.ok) {
+        var keyToUse = (apiKey || (typeof state !== 'undefined' && state.groqApiKey ? state.groqApiKey : '')).trim();
+        if (keyToUse) {
+          async function requestGroqDirect(modelName) {
+            var formData = buildFormData(modelName);
+            return await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + keyToUse },
+              body: formData
+            });
+          }
+
+          res = await requestGroqDirect('whisper-large-v3');
+          if (!res || !res.ok) {
+            res = await requestGroqDirect('whisper-large-v3-turbo');
+          }
+        }
       }
 
-      if (!res.ok) {
-        var errText = await res.text();
-        throw new Error('Groq Transcription API Error (' + res.status + '): ' + errText);
+      if (!res || !res.ok) {
+        var errText = res ? await res.text() : 'No response from transcription service';
+        throw new Error('Groq Transcription API Error (' + (res ? res.status : 500) + '): ' + errText);
       }
 
       onProgress(90, 'Processing VTT/SRT subtitles...');
@@ -10042,12 +10052,6 @@
       var video = $('video-player-el');
       var apiKey = (state.groqApiKey || '').trim();
 
-      if (!apiKey) {
-        showToast('Please enter your free Groq API Key in Settings to transcribe video.', 4000);
-        if (typeof openSettingsModalFromStudio === 'function') openSettingsModalFromStudio(true);
-        return;
-      }
-
       if (typeof audioManager !== 'undefined' && audioManager.play) audioManager.play('pop');
 
       if ($('subtitles-progress-container')) show($('subtitles-progress-container'));
@@ -10116,9 +10120,7 @@
 
       } catch (err) {
         console.warn('Groq transcription API failed:', err);
-        showToast('Groq Whisper API Key invalid or transcription failed. Check your API key in Settings.', 5000);
-        state.groqApiKey = '';
-        if (typeof openSettingsModalFromStudio === 'function') openSettingsModalFromStudio(true);
+        showToast('Transcription error: ' + (err.message || 'Error executing Whisper AI transcription.'), 4500);
       } finally {
         setTimeout(function () {
           if ($('subtitles-progress-container')) hide($('subtitles-progress-container'));

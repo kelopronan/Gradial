@@ -577,47 +577,18 @@
 
             <!-- Groq API Key Configuration -->
             <div class="settings-card-box" style="margin-top: 16px;">
-              <h4 class="settings-card-title"><i class="ph-fill ph-key" style="font-size:18px; color:var(--accent-primary);"></i> Groq API Key (AI Subtitles)</h4>
-              <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-                Enter your Groq API key (`gsk_...`) to enable speech-to-text AI subtitle generation for video clips.
+              <h4 class="settings-card-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                  <i class="ph-fill ph-cpu" style="font-size:18px; color:var(--accent-primary);"></i> Groq Whisper AI Subtitles
+                </span>
+                <span id="settings-groq-key-status" style="font-size: 0.68rem; font-weight: 700; color: var(--accent-primary); padding: 2px 8px; border-radius: 999px; background: rgba(0, 255, 136, 0.15); border: 1px solid rgba(0, 255, 136, 0.3);">
+                  Connected (Vercel Backend)
+                </span>
+              </h4>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0; line-height: 1.4;">
+                Groq Whisper AI is integrated via Vercel serverless backend using your <code style="font-family: monospace; color: var(--accent-primary);">GROQ_API_KEY</code> environment variable. No manual key entry required.
               </p>
-              
-              <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: flex; gap: 8px; align-items: center;">
-                  <input type="password" id="settings-groq-api-key-input" placeholder="gsk_..." class="sk-input" style="flex: 1; font-family: monospace; font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);">
-                  <button class="btn-sk btn-secondary-sk" id="toggle-groq-key-vis-settings" title="Show/Hide Key" style="padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
-                    <i class="ph-fill ph-eye" style="font-size: 14px;"></i>
-                  </button>
-                </div>
-
-                <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
-                  <button class="btn-sk btn-primary-sk" id="check-groq-api-key-btn" style="padding: 6px 14px; font-size: 0.76rem; display: flex; align-items: center; gap: 6px;">
-                    <i class="ph-fill ph-check-circle" style="font-size: 14px;"></i> Check API Key
-                  </button>
-                  <span id="settings-groq-key-status" style="font-size: 0.72rem; font-weight: 700; color: var(--text-sub); padding: 4px 10px; border-radius: 4px; background: var(--bg-recessed); border: 1px solid var(--border-subtle);">
-                    Not Checked
-                  </span>
-                </div>
-
-                <!-- Walkthrough Guide for Groq API Key & Whisper v3 Turbo -->
-                <div style="margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--bg-recessed); border: 1px solid var(--border-color);">
-                  <div style="display: flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 8px;">
-                    <i class="ph-fill ph-question" style="font-size: 14px;"></i> How to get a Groq API Key (Whisper Large v3 Turbo)
-                  </div>
-                  
-                  <ol style="margin: 0; padding-left: 18px; font-size: 0.72rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; line-height: 1.4;">
-                    <li>
-                      Go to <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" style="color: var(--accent-primary); font-weight: 700; text-decoration: underline;">console.groq.com/keys</a> and sign up or log in for free.
-                    </li>
-                    <li>
-                      Click <strong style="color: var(--text-main);">"Create API Key"</strong>, name it (e.g., <em>Gradial AI Subtitles</em>), and copy your key (<code style="font-family: monospace; font-size: 0.7rem; color: var(--accent-primary); background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">gsk_...</code>).
-                    </li>
-                    <li>
-                      Paste your key into the field above and click <strong style="color: var(--text-main);">"Check API Key"</strong>. The high-speed <strong style="color: var(--accent-primary);">Whisper Large v3 Turbo</strong> AI model will automatically generate subtitles for your videos!
-                    </li>
-                  </ol>
-                </div>
-              </div>
+            </div>
             </div>
           </div>
 
